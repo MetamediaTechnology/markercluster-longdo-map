@@ -1,0 +1,26 @@
+{
+    "name": "longdomap.markercluster",
+    "version": "0.0.1",
+    "homepage": "",
+    "authors": [
+        "belkey"
+    ],
+    "description": "Marker Clustering plugin for Longdo map.",
+    "main": [
+        "dist/longdomap.markercluster-src.js",
+        "dist/MarkerCluster.css",
+        "dist/MarkerCluster.Default.css"
+    ],
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "example",
+        "spec",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+    }
+}
