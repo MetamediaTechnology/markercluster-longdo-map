@@ -1,29 +1,21 @@
-/*
-Leaflet.markercluster building, testing and linting scripts.
-
-To use, install Node, then run the following commands in the project root:
-
-    npm install -g jake
-    npm install
-
-To check the code for errors and build Leaflet from source, run "jake".
-To run the tests, run "jake test".
-
-For a custom build, open build/build.html in the browser and follow the instructions.
-*/
+/* eslint-disable */
 
 var path = require('path');
 
-desc('Check source for errors with JSHint');
+desc('Check source for errors with eslint');
 task('lint', {
 	async: true
 }, function(){
-		jake.exec('jshint', {
-			printStdout: true
-		}, function () {
-			console.log('\tCheck passed.\n');
-			complete();
-		});
+	var files = new jake.FileList(), eslintCfg;
+	files.exclude('Jakefile');
+	files.include('./src/*.js');
+	eslintCfg= ['eslint'];
+	eslintCfg.push.apply(eslintCfg,files.toArray());
+	eslintCfg = eslintCfg.join(' ');
+	jake.exec(eslintCfg,{printStdout:true},function (){
+		console.log('\tCheck passed.\n');
+		complete();
+	})
 });
 
 desc('Combine source files');
