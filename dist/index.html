@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://api.longdo.com/map/?key=171082bb9618aa7b985baa7098d6bdce"></script>
+	<script src="longdomap.markercluster-src.js"></script>
+	<title>MarkerClusterTest</title>
+	<style type="text/css">
+          html{
+            height:100%;
+          }
+          body{
+            margin:0px;
+            height:100%;
+          }
+          #map {
+            height: 100%;
+            width: 100%;
+          }
+        </style>
+</head>
+<body onload="init();">
+<div id="map"></div>
+<script type="text/javascript">
+	var map;
+	var heatmapLayer;
+	function init() {
+	  map = new longdo.Map({
+	    placeholder: document.getElementById('map'),
+	    language: 'en'
+	  });
+	  var marker1 = new longdo.Marker({lat:13.750664,lon:100.491945});
+	  map.Overlays.add(marker1);
+	}
+</script>
+</body>
+</html>
