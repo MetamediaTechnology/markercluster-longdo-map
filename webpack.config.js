@@ -9,10 +9,13 @@ module.exports = {
     entry: './src/index.js',
     output: {
         filename: 'longdomap.markercluster-src.js',
-        path: path.join(__dirname, 'dist')
+        path: path.join(__dirname, 'dist'),
+        library: 'lmc'
     },
     module:{
-        rules:[{
+        rules:[
+            
+            {
             test: /\.js$/,
             exclude: /(node_modules|dist)/,
             use: [
@@ -31,4 +34,4 @@ module.exports = {
             loader: 'eslint-loader'
         }]
     }
-}
+};
