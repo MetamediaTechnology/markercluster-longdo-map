@@ -1,3 +1,4 @@
+var lmc =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -90,12 +91,12 @@
 /*!***********************!*\
   !*** ./src/LLBBox.js ***!
   \***********************/
-/*! exports provided: LLBBox */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LLBBox", function() { return LLBBox; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return _default; });
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -103,22 +104,23 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var longdo = window.longdo;
-var LLBBox =
+
+var _default =
 /*#__PURE__*/
 function () {
-  function LLBBox() {
-    _classCallCheck(this, LLBBox);
+  function _default() {
+    _classCallCheck(this, _default);
 
-    var locations = arguments.length === 0 ? [{
-      'lat': 0,
-      'lon': 0
-    }] : arguments.length === 1 ? arguments[0] instanceof Array ? arguments[0] : [arguments[0]] : arguments[0] instanceof Array ? arguments[0] : [arguments[0]];
+    var locations = arguments.length === 0 ? [] : arguments.length === 1 ? arguments[0] instanceof Array ? arguments[0] : [arguments[0]] : arguments[0] instanceof Array ? arguments[0] : [arguments[0]];
     this._projection = arguments.length <= 1 ? longdo.Projections.EPSG3857 : arguments[1];
-    this.locationList = locations instanceof Array ? locations : [locations];
-    this._bounds = longdo.Utils.locationBound(this.locationList);
+    this._locationList = locations instanceof Array ? locations : [locations];
+
+    if (locations.length > 0) {
+      this._bounds = longdo.Util.locationBound(this._locationList);
+    }
   }
 
-  _createClass(LLBBox, [{
+  _createClass(_default, [{
     key: "getBounds",
     value: function getBounds() {
       return {
@@ -133,7 +135,7 @@ function () {
     value: function add(location) {
       this._locationList.push(location);
 
-      this._bounds = longdo.Utils.locationBound(this._locationList);
+      this._bounds = longdo.Util.locationBound(this._locationList);
     }
   }, {
     key: "remove",
@@ -141,11 +143,137 @@ function () {
       this._locationList = this._locationList.filter(function (e) {
         return e !== location;
       });
+      this._bounds = this.empty() ? null : longdo.Util.locationBound(this._locationList);
+    }
+  }, {
+    key: "empty",
+    value: function empty() {
+      return this._locationList.length === 0;
+    }
+  }, {
+    key: "generateFrom",
+    value: function generateFrom(bound) {
+      this._locationList.length = 0;
+      this.add({
+        "lon": bound.minLon,
+        "lat": bound.minLat
+      });
+      this.add({
+        "lon": bound.maxLon,
+        "lat": bound.minLat
+      });
+      this.add({
+        "lon": bound.minLon,
+        "lat": bound.maxLat
+      });
+      this.add({
+        'lon': bound.maxLon,
+        'lat': bound.maxLat
+      });
+      this._bounds = longdo.Util.locationBound(this._locationList);
+      return this;
+    }
+  }, {
+    key: "generateRect",
+    value: function generateRect(loc1, loc2) {
+      this._locationList.length = 0;
+      this.add({
+        "lon": loc1.lon,
+        "lat": loc1.lat
+      });
+      this.add({
+        "lon": loc1.lon,
+        "lat": loc2.lat
+      });
+      this.add({
+        "lon": loc2.lon,
+        "lat": loc1.lat
+      });
+      this.add({
+        "lon": loc2.lon,
+        "lat": loc2.lat
+      });
+      this._bounds = longdo.Util.locationBound(this._locationList);
+      return this;
+    }
+  }, {
+    key: "getLocations",
+    value: function getLocations() {
+      return this._locationList.slice();
+    }
+  }, {
+    key: "isLocInBounds",
+    value: function isLocInBounds(loc) {
+      var result = longdo.Util.contains(loc, this.getRectVertex());
+      return result === null ? true : result;
+    }
+  }, {
+    key: "extendSize",
+    value: function extendSize(diff) {
+      var b = this._bounds;
+      var maxy = this._projection.latToNorm(b.maxLat) + diff;
+      var miny = this._projection.latToNorm(b.minLat) - diff;
+
+      this._locationList.push({
+        "lon": b.minLon - diff,
+        "lat": this._projection.normToLat(miny)
+      });
+
+      this._locationList.push({
+        "lon": b.minLon - diff,
+        "lat": this._projection.normToLat(maxy)
+      });
+
+      this._locationList.push({
+        "lon": b.minLon + diff,
+        "lat": this._projection.normToLat(miny)
+      });
+
+      this._locationList.push({
+        "lon": b.maxLon + diff,
+        "lat": this._projection.normToLat(maxy)
+      });
+
+      this._bounds = longdo.Util.locationBound(this._locationList);
+      return this;
+    }
+  }, {
+    key: "getRectVertex",
+    value: function getRectVertex() {
+      return [{
+        "lon": this._bounds.minLon,
+        "lat": this._bounds.minLat
+      }, {
+        "lon": this._bounds.minLon,
+        "lat": this._bounds.maxLat
+      }, {
+        "lon": this._bounds.maxLon,
+        "lat": this._bounds.maxLat
+      }, {
+        "lon": this._bounds.maxLon,
+        "lat": this._bounds.minLat
+      }];
+    }
+    /*
+    Adapted from https://wiki.openstreetmap.org/wiki/Mercator
+    */
+
+  }, {
+    key: "_y2lat",
+    value: function _y2lat(y) {
+      return (Math.atan(Math.exp(y / (180 / Math.PI))) / (Math.PI / 4) - 1) * 90;
+    }
+  }, {
+    key: "_lat2y",
+    value: function _lat2y(lat) {
+      return Math.log(Math.tan((lat / 90 + 1) * (Math.PI / 4))) * (180 / Math.PI);
     }
   }]);
 
-  return LLBBox;
+  return _default;
 }();
+
+
 
 /***/ }),
 
@@ -153,299 +281,555 @@ function () {
 /*!******************************!*\
   !*** ./src/MarkerCluster.js ***!
   \******************************/
-/*! exports provided: MarkerCluster */
+/*! exports provided: default, Cluster, ClusterIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MarkerCluster", function() { return MarkerCluster; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return MarkerCluster; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cluster", function() { return Cluster; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ClusterIcon", function() { return ClusterIcon; });
 /* harmony import */ var _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./LLBBox.js */ "./src/LLBBox.js");
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
 if (typeof window.longdo === 'undefined') {
-  throw new Error('longdo API must be loaded before the longdomap heatmap plugin');
+  throw new Error('longdo API must be loaded before the longdomap markercluster plugin');
 }
 
 var longdo = window.longdo;
 
+
 var MarkerCluster =
 /*#__PURE__*/
-function (_longdo$Marker) {
-  _inherits(MarkerCluster, _longdo$Marker);
-
-  function MarkerCluster(location, options) {
+function () {
+  function MarkerCluster(map, options) {
     _classCallCheck(this, MarkerCluster);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(MarkerCluster).call(this, location, options));
+    this._map = map;
+    this._markers = [];
+    this._clusters = [];
+    this._styles = options.styles || [];
+    this._prevZoom = 2;
+    this._maxZoom = options.maxZoom || null;
+    this._minClusterSize = options.minClusterSize || 2;
+    this.sizes = [53, 56, 66, 78, 90];
+    this._ready = false;
+    this._gridSize = options.gridSize || 60;
+    this._averageCenter = false;
+
+    this._calculator = function (markers) {
+      var count = markers.length;
+      return {
+        'index': 0,
+        'text': '' + count
+      };
+    };
+
+    var that = this;
+    this._clusterMarkerImage = new Image();
+
+    this._clusterMarkerImage.onload = function () {
+      that._prevZoom = that._map.zoom;
+      that._ready = true;
+      that.resetViewport();
+
+      that._createClusters();
+    };
+
+    this._clusterMarkerImage.src = './m1.png';
+
+    this._map.Event.bind('zoom', function ()
+    /*pivot*/
+    {
+      if (!that._ready) {
+        return;
+      }
+
+      var zoom = that._map.zoom();
+
+      if (that._prevZoom !== zoom) {
+        that._prevZoom = zoom;
+        that.resetViewport();
+
+        that._createClusters();
+      }
+    });
+
+    this._map.Event.bind('idle', function () {
+      if (!that._ready) {
+        return;
+      } //that.resetViewport();
+      //that._createClusters();
+
+    });
+
+    this._map.Event.bind('drop', function () {
+      if (!that._ready) {
+        return;
+      }
+
+      that.resetViewport();
+
+      that._createClusters();
+    });
+
+    this._map.Event.bind('overlayClick', function (overlay) {
+      if (!that._ready) {
+        return;
+      }
+
+      var len = that._clusters.length;
+
+      while (len--) {
+        var cl = that._clusters[len];
+
+        if (overlay === cl._clusterIcon._clusterMarker) {
+          that._map.bound(cl._bounds.getBounds());
+
+          return;
+        }
+      }
+    });
   }
 
   _createClass(MarkerCluster, [{
-    key: "initialize",
-    value: function initialize(group, zoom, child1, child2) {
-      this._group = group;
-      this._zoom = zoom;
-      this._markers = [];
-      this._childClusters = [];
-      this.childCount = 0;
-      this._iconNeedsUpdate = true;
-      this._boundsNeedUpdate = true;
-      this._bounds = new _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__["LLBBox"]();
-
-      if (child1) {
-        this._addChild(child1);
+    key: "addMarkers",
+    value: function addMarkers(markers) {
+      if (markers instanceof longdo.Marker) {
+        markers = [markers];
       }
 
-      if (child2) {
-        this._addChild(child2);
+      var len = markers.length;
+
+      while (len--) {
+        var m = markers[len];
+
+        this._markers.push(m);
       }
     }
   }, {
-    key: "getAllChildMarkers",
-    value: function getAllChildMarkers(storageArray) {
-      storageArray = storageArray || [];
-      var len = this._childClusters.length;
+    key: "render",
+    value: function render() {
+      this._ready = true;
+      this.resetViewport();
+
+      this._createClusters();
+    }
+  }, {
+    key: "_createClusters",
+    value: function _createClusters() {
+      if (!this._ready) {
+        return;
+      }
+
+      var mapBounds = new _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__["default"]().generateFrom(this._map.bound());
+      var bounds = this.getExtendedBounds(mapBounds);
+      var len = this._markers.length;
 
       while (len--) {
-        this._childClusters[len].getAllChildMarkers(storageArray);
+        var m = this._markers[len];
+        var loc = m.location();
+
+        if (!m.isAdded && bounds.isLocInBounds(loc)) {
+          this._addToClosestCluster(m);
+        }
+      }
+    }
+  }, {
+    key: "_addToClosestCluster",
+    value: function _addToClosestCluster(marker) {
+      var distance = Number.POSITIVE_INFINITY;
+      var clusterToAddTo = null;
+      var len = this._clusters.length;
+
+      while (len--) {
+        var cluster = this._clusters[len];
+        var cen = cluster._center;
+
+        if (cen) {
+          var d = longdo.Util.distance([cen, marker.location()]);
+
+          if (d < distance) {
+            distance = d;
+            clusterToAddTo = cluster;
+          }
+        }
+      }
+
+      if (clusterToAddTo && clusterToAddTo.isMarkerInClusterBounds(marker)) {
+        clusterToAddTo.addMarker(marker);
+      } else {
+        var _cluster = new Cluster(this, this._clusters.length);
+
+        _cluster.addMarker(marker);
+
+        this._clusters.push(_cluster);
+      }
+    }
+  }, {
+    key: "_removeMarker",
+    value: function _removeMarker(marker) {
+      var index = this._markers.indexOf(marker);
+
+      if (index === -1) {
+        return false;
+      }
+
+      this._map.Overlays.remove(marker);
+
+      this._markers.splice(index, 1);
+
+      return true;
+    }
+  }, {
+    key: "removeMarker",
+    value: function removeMarker(marker) {
+      var removed = this._removeMarker(marker);
+
+      if (removed) {
+        this.resetViewport();
+
+        this._createClusters();
+
+        return true;
+      }
+
+      return false;
+    }
+  }, {
+    key: "removeMarkers",
+    value: function removeMarkers(markers) {
+      var markersCopy = markers === this._markers ? this._markers.slice() : markers;
+      var removed = false;
+      var len = markersCopy.length;
+
+      while (len--) {
+        var r = this._removeMarker(markersCopy[len]);
+
+        removed = removed || r;
+      }
+
+      if (removed) {
+        this.resetViewport();
+
+        this._createClusters();
+
+        return true;
+      }
+
+      return false;
+    }
+  }, {
+    key: "getExtendedBounds",
+    value: function getExtendedBounds(bounds) {
+      bounds.extendSize(this._gridSize * Math.pow(2, -this._map.zoom()));
+      return bounds;
+    }
+  }, {
+    key: "clearMarkers",
+    value: function clearMarkers() {
+      this.resetViewport();
+      var len = this._markers.length;
+
+      while (len--) {
+        var marker = this._markers[len];
+
+        this._map.Overlays.remove(marker);
+      }
+
+      this._markers = [];
+    }
+  }, {
+    key: "resetViewport",
+    value: function resetViewport() {
+      var len = this._clusters.length;
+
+      while (len--) {
+        this._clusters[len].remove();
       }
 
       len = this._markers.length;
 
       while (len--) {
-        storageArray.push(this._markers[len]);
+        var marker = this._markers[len];
+        marker.isAdded = false;
+
+        this._map.Overlays.remove(marker);
       }
 
-      return storageArray;
+      this._clusters = [];
     }
   }, {
-    key: "getChildCount",
-    value: function getChildCount() {
-      return this._childCount;
-    }
-  }, {
-    key: "zoomToBounds",
-    value: function zoomToBounds() {//TODO
-    }
-  }, {
-    key: "getBounds",
-    value: function getBounds() {
-      return this._bounds.getBounds();
-    }
-  }, {
-    key: "_updateIcon",
-    value: function _updateIcon() {//TODO
-    }
-  }, {
-    key: "createIcon",
-    value: function createIcon() {//TODO
-    }
-  }, {
-    key: "createShadow",
-    value: function createShadow() {//TODO
-    }
-  }, {
-    key: "_addChild",
-    value: function _addChild(new1, isNotificationFromChild) {
-      this._iconNeedsUpdate = true;
-      this._boundsNeedUpdate = true;
+    key: "repaint",
+    value: function repaint() {
+      var oldClusters = this._clusters().slice();
 
-      this._setClusterCenter(new1);
+      this._clusters.length = 0;
+      this.resetViewport();
 
-      if (new1 instanceof MarkerCluster) {
-        if (!isNotificationFromChild) {
-          this._childClusters.push(new1);
+      this._createClusters();
 
-          new1.__parent = this;
+      setTimeout(function () {
+        var len = oldClusters.length;
+
+        while (len--) {
+          oldClusters[len].remove();
         }
-
-        this._childCount += new1._childCount;
-      } else {
-        if (!isNotificationFromChild) {
-          this._markers.push(new1);
-        }
-
-        this._childCount++;
-      }
-
-      if (this.__parent) {
-        this.__parent._addChild(new1, true);
-      }
-    }
-  }, {
-    key: "_setClusterCenter",
-    value: function _setClusterCenter(child) {
-      if (!this._cLatLon) {
-        this._cLatLon = child._cLatLon || child._latlon;
-      }
-    }
-  }, {
-    key: "_resetBounds",
-    value: function _resetBounds() {
-      var bounds = this._bounds;
-      bounds.minLat = -Infinity;
-      bounds.minLon = -Infinity;
-      bounds.maxlon = Infinity;
-      bounds.maxLat = Infinity;
-    }
-  }, {
-    key: "_recalculateBounds",
-    value: function _recalculateBounds() {
-      var markers = this._markers,
-          childClusters = this._childClusters,
-          latSum = 0,
-          lonSum = 0,
-          totalCount = this._childCount,
-          len,
-          child,
-          childLatLon,
-          childCount;
-
-      if (totalCount === 0) {
-        return;
-      }
-
-      this._resetBounds();
-
-      len = markers.length;
-
-      while (len--) {
-        childLatLon = markers[len]._latlon; //TODO
-
-        latSum += childLatLon.lat;
-        lonSum += childLatLon.lon;
-      }
-
-      len = childClusters.length;
-
-      while (len--) {
-        child = childClusters[len];
-
-        if (child._boundsNeedUpdate) {
-          child._recalculateBounds();
-        } //TODO
-
-
-        childLatLon = child._wLatLon;
-        childCount = child._childCount;
-        latSum += childLatLon.lat * childCount;
-        lonSum += childLatLon.lon * childCount;
-      }
-
-      this._latlon = this._wLatLon = {
-        "lat": latSum / totalCount,
-        "lon": lonSum / totalCount
-      };
-      this._boundsNeedUpdate = false;
-    }
-  }, {
-    key: "_addToMap",
-    value: function _addToMap(startPos) {
-      if (startPos) {
-        this._backupLatlon = this._latlon;
-        this.setLocation(this._latlon);
-      } //TODO
-
+      }, 0);
     }
   }]);
 
   return MarkerCluster;
-}(longdo.Marker);
+}();
 
-/***/ }),
 
-/***/ "./src/MarkerClusterGroup.js":
-/*!***********************************!*\
-  !*** ./src/MarkerClusterGroup.js ***!
-  \***********************************/
-/*! exports provided: MarkerClusterGroup */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MarkerClusterGroup", function() { return MarkerClusterGroup; });
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-var longdo = window.longdo;
-var MarkerClusterGroup =
+var Cluster =
 /*#__PURE__*/
-function (_longdo$Layer) {
-  _inherits(MarkerClusterGroup, _longdo$Layer);
+function () {
+  function Cluster(markerCluster, cid) {
+    _classCallCheck(this, Cluster);
 
-  function MarkerClusterGroup() {
-    var _this;
-
-    _classCallCheck(this, MarkerClusterGroup);
-
-    return _possibleConstructorReturn(_this);
+    this._markerCluster = markerCluster;
+    this._map = markerCluster._map;
+    this._center = null;
+    this._markers = [];
+    this._bounds = null;
+    this._clusterIcon = new ClusterIcon(this, {}, this._markerCluster._gridSize);
+    this._cid = cid;
   }
 
-  _createClass(MarkerClusterGroup, [{
-    key: "initialize",
-    value: function initialize() {}
-  }, {
-    key: "add",
-    value: function add() {}
+  _createClass(Cluster, [{
+    key: "addMarker",
+    value: function addMarker(marker) {
+      if (this._markers.indexOf(marker) !== -1) {
+        return false;
+      }
+
+      if (!this._center) {
+        this._center = marker.location();
+
+        this._calculateBounds();
+      } else {
+        if (this._markerCluster._averageCenter) {
+          var l = this._markers.length + 1;
+          var lat = (this._center.lat * (l - 1) + marker.location().lat) / l;
+          var lon = (this._center.lon * (l - 1) + marker.location().lon) / l;
+          this._center = {
+            "lat": lat,
+            "lon": lon
+          };
+
+          this._calculateBounds();
+        }
+      }
+
+      marker.isAdded = true;
+
+      this._markers.push(marker);
+
+      var len = this._markers.length;
+
+      if (len < this._markerCluster._minClusterSize) {
+        if (!marker.active()) {
+          this._map.Overlays.add(marker);
+        }
+      }
+
+      if (len === this._markerCluster._minClusterSize) {
+        var lenc = len;
+
+        while (lenc--) {
+          var m = this._markers[lenc];
+
+          if (m.active()) {
+            this._map.Overlays.remove(m);
+          }
+        }
+      }
+
+      if (len >= this._markerCluster._minClusterSize) {
+        var _lenc = len;
+
+        while (_lenc--) {
+          var _m = this._markers[_lenc];
+
+          if (_m.active()) {
+            this._map.Overlays.remove(_m);
+          }
+        }
+      }
+
+      this.updateIcon();
+      return true;
+    }
   }, {
     key: "remove",
-    value: function remove() {}
+    value: function remove() {
+      this._clusterIcon.remove();
+
+      this._markers.length = 0;
+      delete this._markers;
+    }
   }, {
-    key: "addMarkers",
-    value: function addMarkers() {}
+    key: "_calculateBounds",
+    value: function _calculateBounds() {
+      this._bounds = this._markerCluster.getExtendedBounds(new _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__["default"]().generateRect(this._center, this._center));
+    }
   }, {
-    key: "removeMarkers",
-    value: function removeMarkers() {}
+    key: "updateIcon",
+    value: function updateIcon() {
+      var zoom = this._map.zoom();
+
+      var mz = this._markerCluster._maxZoom;
+
+      var ml = this._map.Overlays.list();
+
+      if (mz && zoom > mz || zoom === 20) {
+        var len = this._markers.length;
+
+        while (len--) {
+          var marker = this._markers[len];
+
+          if (!ml.includes(marker)) {
+            this._map.Overlays.add(marker);
+          }
+        }
+
+        return;
+      }
+
+      if (this._markers.length < this._markerCluster._minClusterSize) {
+        this._clusterIcon.hide();
+
+        return;
+      }
+
+      var sums = this._markerCluster._calculator(this._markers, 0);
+
+      this._clusterIcon.setCenter(this._center);
+
+      this._clusterIcon.setSums(sums);
+
+      this._clusterIcon.show();
+    }
   }, {
-    key: "clearMarkers",
-    value: function clearMarkers() {}
+    key: "isMarkerInClusterBounds",
+    value: function isMarkerInClusterBounds(marker) {
+      return this._bounds.isLocInBounds(marker.location());
+    }
   }, {
-    key: "getMarkers",
-    value: function getMarkers() {}
-  }, {
-    key: "getMarker",
-    value: function getMarker() {}
-  }, {
-    key: "hasMarker",
-    value: function hasMarker() {}
-  }, {
-    key: "zoomToShowMarker",
-    value: function zoomToShowMarker() {}
-  }, {
-    key: "getVisibleParent",
-    value: function getVisibleParent() {}
+    key: "containsMarker",
+    value: function containsMarker(marker) {
+      var len = this._markers.length;
+
+      while (len--) {
+        if (this._markers[len] === marker) {
+          return true;
+        }
+      }
+
+      return false;
+    }
   }]);
 
-  return MarkerClusterGroup;
-}(longdo.Layer);
+  return Cluster;
+}();
+var ClusterIcon =
+/*#__PURE__*/
+function () {
+  function ClusterIcon(cluster, styles) {
+    _classCallCheck(this, ClusterIcon);
+
+    this._styles = styles;
+    this._cluster = cluster;
+    this._center = null;
+    this._map = cluster._map;
+    this._visible = false;
+    this._clusterMarker = null;
+    this._sums = null;
+    this._clusterMarker = new longdo.Marker({
+      "lat": 0,
+      "lon": 0
+    }, {
+      "icon": {
+        "html": "<div style=\"width:52px;height:52px;background:url(./m1.png) no-repeat center top;color:red;line-height:52px;amrgin:0;padding:0;position:relative;top:-26px;left:-26px;\"><div style='margin-left:22px;'>-1</div></div>",
+        "offset": {
+          "x": 0,
+          "y": 0
+        },
+        "size": {
+          "width": 53,
+          "height": 53
+        }
+      },
+      "weight": longdo.OverlayWeight.Top
+    });
+  }
+
+  _createClass(ClusterIcon, [{
+    key: "show",
+    value: function show() {
+      var pos = this._center;
+
+      if (this._clusterMarker.active()) {
+        this._map.Overlays.move(this._clusterMarker, pos);
+
+        this._clusterMarker.title = '(id:' + this._cluster._cid + ')' + this._sums.text;
+      } else {
+        this._clusterMarker.setLocation(pos);
+
+        this._map.Overlays.add(this._clusterMarker);
+      }
+
+      this._visible = true;
+    }
+  }, {
+    key: "remove",
+    value: function remove() {
+      this._map.Overlays.remove(this._clusterMarker);
+    }
+  }, {
+    key: "hide",
+    value: function hide() {
+      this._map.Overlays.remove(this._clusterMarker);
+
+      this._visible = false;
+    }
+  }, {
+    key: "setCenter",
+    value: function setCenter(center) {
+      this._center = center;
+
+      if (this._clusterMarker) {
+        this._clusterMarker.move({
+          "lat": center.lat,
+          "lon": center.lon
+        });
+      }
+    }
+  }, {
+    key: "setSums",
+    value: function setSums(sums) {
+      if (this._sums && sums.text === this._sums.text) {
+        return;
+      }
+
+      this._sums = sums;
+      this.index = sums.index;
+
+      if (this._clusterMarker && this._clusterMarker.element()) {
+        this._clusterMarker.element().children[0].children[0].innerHTML = this._sums.text;
+        this._clusterMarker.title = "(id:".concat(this._cluster._cid, ")").concat(this._sums.text);
+      }
+    }
+  }]);
+
+  return ClusterIcon;
+}();
 
 /***/ }),
 
@@ -453,20 +837,18 @@ function (_longdo$Layer) {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: MarkerClusterGroup, MarkerCluster, LLBBox */
+/*! exports provided: MarkerCluster, Cluster, LLBBox */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _MarkerClusterGroup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./MarkerClusterGroup.js */ "./src/MarkerClusterGroup.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MarkerClusterGroup", function() { return _MarkerClusterGroup_js__WEBPACK_IMPORTED_MODULE_0__["MarkerClusterGroup"]; });
+/* harmony import */ var _MarkerCluster_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./MarkerCluster.js */ "./src/MarkerCluster.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MarkerCluster", function() { return _MarkerCluster_js__WEBPACK_IMPORTED_MODULE_0__["default"]; });
 
-/* harmony import */ var _MarkerCluster_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./MarkerCluster.js */ "./src/MarkerCluster.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MarkerCluster", function() { return _MarkerCluster_js__WEBPACK_IMPORTED_MODULE_1__["MarkerCluster"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Cluster", function() { return _MarkerCluster_js__WEBPACK_IMPORTED_MODULE_0__["Cluster"]; });
 
-/* harmony import */ var _LLBBox_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./LLBBox.js */ "./src/LLBBox.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LLBBox", function() { return _LLBBox_js__WEBPACK_IMPORTED_MODULE_2__["LLBBox"]; });
-
+/* harmony import */ var _LLBBox_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./LLBBox.js */ "./src/LLBBox.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LLBBox", function() { return _LLBBox_js__WEBPACK_IMPORTED_MODULE_1__["default"]; });
 
 
 
