@@ -114,6 +114,7 @@ function () {
     var locations = arguments.length === 0 ? [] : arguments.length === 1 ? arguments[0] instanceof Array ? arguments[0] : [arguments[0]] : arguments[0] instanceof Array ? arguments[0] : [arguments[0]];
     this._projection = arguments.length <= 1 ? longdo.Projections.EPSG3857 : arguments[1];
     this._locationList = locations instanceof Array ? locations : [locations];
+    this._originalLocationList = this._locationList.slice();
 
     if (locations.length > 0) {
       this._bounds = longdo.Util.locationBound(this._locationList);
@@ -131,9 +132,17 @@ function () {
       };
     }
   }, {
+    key: "getMinimumBounds",
+    value: function getMinimumBounds() {
+      var b = longdo.Util.locationBound(this._originalLocationList);
+      return b;
+    }
+  }, {
     key: "add",
     value: function add(location) {
       this._locationList.push(location);
+
+      this._originalLocationList.push(location);
 
       this._bounds = longdo.Util.locationBound(this._locationList);
     }
@@ -141,6 +150,9 @@ function () {
     key: "remove",
     value: function remove(location) {
       this._locationList = this._locationList.filter(function (e) {
+        return e !== location;
+      });
+      this._originalLocationList = this._originalLocationList.filter(function (e) {
         return e !== location;
       });
       this._bounds = this.empty() ? null : longdo.Util.locationBound(this._locationList);
@@ -318,8 +330,9 @@ function () {
     this._minClusterSize = options.minClusterSize || 2;
     this.sizes = [53, 56, 66, 78, 90];
     this._ready = false;
-    this._gridSize = options.gridSize || 60;
-    this._averageCenter = false;
+    this._gridSize = options.gridSize || 120;
+    this._averageCenter = true;
+    this._drawMarkerArea = true;
 
     this._calculator = function (markers) {
       var count = markers.length;
@@ -376,6 +389,15 @@ function () {
 
       that._createClusters();
     });
+    /*
+    this._map.Event.bind('drag', function(move){
+        if(that.ready && move.x === 0 && move.y === 0){
+            that.resetViewport();
+            that._createClusters();
+        }
+    });
+    */
+
 
     this._map.Event.bind('overlayClick', function (overlay) {
       if (!that._ready) {
@@ -388,8 +410,13 @@ function () {
         var cl = that._clusters[len];
 
         if (overlay === cl._clusterIcon._clusterMarker) {
-          that._map.bound(cl._bounds.getBounds());
+          that._map.bound(cl._bounds.getMinimumBounds());
 
+          setTimeout(function () {
+            that.resetViewport();
+
+            that._createClusters();
+          }, 0);
           return;
         }
       }
@@ -614,15 +641,7 @@ function () {
         this._calculateBounds();
       } else {
         if (this._markerCluster._averageCenter) {
-          var l = this._markers.length + 1;
-          var lat = (this._center.lat * (l - 1) + marker.location().lat) / l;
-          var lon = (this._center.lon * (l - 1) + marker.location().lon) / l;
-          this._center = {
-            "lat": lat,
-            "lon": lon
-          };
-
-          this._calculateBounds();
+          this._center = longdo.Util.averageLocation(longdo.Projections.EPSG3857, this._center, marker.location());
         }
       }
 
@@ -753,7 +772,7 @@ function () {
       "lon": 0
     }, {
       "icon": {
-        "html": "<div style=\"width:52px;height:52px;background:url(./m1.png) no-repeat center top;color:red;line-height:52px;amrgin:0;padding:0;position:relative;top:-26px;left:-26px;\"><div style='margin-left:22px;'>-1</div></div>",
+        "html": "<div style=\"width:52px;height:52px;background:url(./m1.png) no-repeat center top;color:red;line-height:52px;amrgin:0;padding:0;position:relative;top:-26px;left:-26px;\"><div style='margin-left:22px;font-weight:bold;'>-1</div></div>",
         "offset": {
           "x": 0,
           "y": 0
@@ -774,12 +793,20 @@ function () {
 
       if (this._clusterMarker.active()) {
         this._map.Overlays.move(this._clusterMarker, pos);
-
-        this._clusterMarker.title = '(id:' + this._cluster._cid + ')' + this._sums.text;
       } else {
         this._clusterMarker.setLocation(pos);
 
         this._map.Overlays.add(this._clusterMarker);
+
+        if (this._poly) {
+          this._map.Overlays.remove(this._poly);
+        }
+
+        if (this._cluster._markerCluster._drawMarkerArea) {
+          this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {});
+
+          this._map.Overlays.add(this._poly);
+        }
       }
 
       this._visible = true;
@@ -788,6 +815,12 @@ function () {
     key: "remove",
     value: function remove() {
       this._map.Overlays.remove(this._clusterMarker);
+
+      if (this._poly) {
+        this._map.Overlays.remove(this._poly);
+
+        this._poly = null;
+      }
     }
   }, {
     key: "hide",
@@ -795,6 +828,16 @@ function () {
       this._map.Overlays.remove(this._clusterMarker);
 
       this._visible = false;
+
+      if (this._cluster._markerCluster._drawMarkerArea) {
+        if (!this._poly) {
+          this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {});
+        }
+
+        if (!this._poly.active()) {
+          this._map.Overlays.add(this._poly);
+        }
+      }
     }
   }, {
     key: "setCenter",

@@ -15,8 +15,9 @@ export default class MarkerCluster{
         this._minClusterSize = options.minClusterSize || 2;
         this.sizes = [53,56,66,78,90];
         this._ready = false;
-        this._gridSize = options.gridSize || 60;
-        this._averageCenter = false;
+        this._gridSize = options.gridSize || 120;
+        this._averageCenter = true;
+        this._drawMarkerArea = true;
         this._calculator = function(markers){
             const count = markers.length;
             return {'index': 0,'text': ''+ count};
@@ -50,13 +51,26 @@ export default class MarkerCluster{
             that.resetViewport();
             that._createClusters();
         });
+        /*
+        this._map.Event.bind('drag', function(move){
+            if(that.ready && move.x === 0 && move.y === 0){
+                that.resetViewport();
+                that._createClusters();
+            }
+        });
+        */
         this._map.Event.bind('overlayClick', function(overlay){
             if(!that._ready){return;}
             let len = that._clusters.length;
             while(len--){
                 const cl = that._clusters[len];
                 if(overlay === cl._clusterIcon._clusterMarker){
-                    that._map.bound(cl._bounds.getBounds());
+                    
+                    that._map.bound(cl._bounds.getMinimumBounds());
+                    setTimeout(function(){
+                        that.resetViewport();
+                        that._createClusters();
+                    },0);
                     return;
                 }
             }
@@ -214,11 +228,8 @@ export class Cluster{
             this._calculateBounds();
         }else{
             if(this._markerCluster._averageCenter){
-                const l = this._markers.length + 1;
-                const lat = (this._center.lat * (l-1) + marker.location().lat) / l;
-                const lon = (this._center.lon * (l-1) + marker.location().lon) / l;
-                this._center = {"lat":lat,"lon":lon};
-                this._calculateBounds();
+                this._center = longdo.Util.averageLocation(longdo.Projections.EPSG3857,
+                    this._center,marker.location());
             }
         }
         marker.isAdded = true;
@@ -308,7 +319,7 @@ export class ClusterIcon{
         this._sums = null;
         this._clusterMarker = new longdo.Marker({"lat":0,"lon":0},{
             "icon":{
-                "html": `<div style="width:52px;height:52px;background:url(./m1.png) no-repeat center top;color:red;line-height:52px;amrgin:0;padding:0;position:relative;top:-26px;left:-26px;"><div style='margin-left:22px;'>-1</div></div>`,
+                "html": `<div style="width:52px;height:52px;background:url(./m1.png) no-repeat center top;color:red;line-height:52px;amrgin:0;padding:0;position:relative;top:-26px;left:-26px;"><div style='margin-left:22px;font-weight:bold;'>-1</div></div>`,
                 "offset": { "x": 0, "y": 0},
                 "size": {"width":53,"height":53}
             },
@@ -320,19 +331,37 @@ export class ClusterIcon{
         const pos = this._center;
         if(this._clusterMarker.active()){
             this._map.Overlays.move(this._clusterMarker,pos);
-            this._clusterMarker.title = '(id:'+this._cluster._cid + ')' + this._sums.text;
         }else{
             this._clusterMarker.setLocation(pos);
             this._map.Overlays.add(this._clusterMarker);
+            if(this._poly){
+                this._map.Overlays.remove(this._poly);
+            }
+            if(this._cluster._markerCluster._drawMarkerArea){
+                this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{});
+                this._map.Overlays.add(this._poly);
+            }
         }
         this._visible = true;
     }
     remove(){
         this._map.Overlays.remove(this._clusterMarker);
+        if(this._poly){
+            this._map.Overlays.remove(this._poly);
+            this._poly = null;
+        }
     }
     hide(){
         this._map.Overlays.remove(this._clusterMarker);
         this._visible = false;
+        if(this._cluster._markerCluster._drawMarkerArea){
+            if(!this._poly){
+                this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{});
+            }
+            if(!this._poly.active()){
+                this._map.Overlays.add(this._poly);
+            }
+        }
     }
     setCenter(center){
         this._center = center;

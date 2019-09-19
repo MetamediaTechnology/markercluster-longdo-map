@@ -1,6 +1,5 @@
 const longdo = window.longdo;
 export default class{
-
     constructor(){
         let locations = arguments.length === 0 ? [] :
                         arguments.length === 1 ? 
@@ -8,24 +7,30 @@ export default class{
                         arguments[0] instanceof Array ? arguments[0] : [arguments[0]];
         this._projection = arguments.length <= 1 ? longdo.Projections.EPSG3857 : arguments[1];
         this._locationList = locations instanceof Array ? locations : [locations];
+        this._originalLocationList = this._locationList.slice();
         if(locations.length > 0){
             this._bounds = longdo.Util.locationBound(this._locationList);
         }
     }
-
     getBounds(){
         return {'minLon':this._bounds.minLon,
                 'minLat':this._bounds.minLat,
                 'maxLon':this._bounds.maxLon,
                 'maxLat':this._bounds.maxLat};
     }
+    getMinimumBounds(){
+        const b = longdo.Util.locationBound(this._originalLocationList);
+        return b;
+    }
 
     add(location){
         this._locationList.push(location);
+        this._originalLocationList.push(location);
         this._bounds = longdo.Util.locationBound(this._locationList);
     }
     remove(location){
         this._locationList = this._locationList.filter((e) => e !== location);
+        this._originalLocationList = this._originalLocationList.filter((e) => e !== location);
         this._bounds = this.empty() ? null: longdo.Util.locationBound(this._locationList);
     }
 
