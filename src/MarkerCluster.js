@@ -160,7 +160,7 @@ export default class MarkerCluster{
         this.resetViewport();
         let len = this._markers.length;
         while(len--){
-            let marker = this._markers[len];
+            const marker = this._markers[len];
             this._map.Overlays.remove(marker);
         }
         this._markers = [];
@@ -195,7 +195,7 @@ export default class MarkerCluster{
 
 export class Cluster{
 
-    constructor(markerCluster,cid){
+    constructor(markerCluster){
         this._markerCluster = markerCluster;
         this._map = markerCluster._map;
         
@@ -203,7 +203,6 @@ export class Cluster{
         this._markers = [];
         this._bounds = null;
         this._clusterIcon = new ClusterIcon(this,{},this._markerCluster._gridSize);
-        this._cid = cid;
     }
 
     addMarker(marker){
@@ -265,12 +264,11 @@ export class Cluster{
     updateIcon(){
         const zoom = this._map.zoom();
         const mz = this._markerCluster._maxZoom;
-        const ml = this._map.Overlays.list();
         if(mz && zoom > mz || zoom === 20){
             let len = this._markers.length;
             while(len--){
                 const marker = this._markers[len];
-                if(!ml.includes(marker)){
+                if(!marker.active()){
                     this._map.Overlays.add(marker);
                 }
             }
@@ -319,7 +317,7 @@ export class ClusterIcon{
     }
 
     show(){
-        let pos = this._center;
+        const pos = this._center;
         if(this._clusterMarker.active()){
             this._map.Overlays.move(this._clusterMarker,pos);
             this._clusterMarker.title = '(id:'+this._cluster._cid + ')' + this._sums.text;

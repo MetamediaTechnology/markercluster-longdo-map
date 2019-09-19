@@ -590,7 +590,7 @@ function () {
 var Cluster =
 /*#__PURE__*/
 function () {
-  function Cluster(markerCluster, cid) {
+  function Cluster(markerCluster) {
     _classCallCheck(this, Cluster);
 
     this._markerCluster = markerCluster;
@@ -599,7 +599,6 @@ function () {
     this._markers = [];
     this._bounds = null;
     this._clusterIcon = new ClusterIcon(this, {}, this._markerCluster._gridSize);
-    this._cid = cid;
   }
 
   _createClass(Cluster, [{
@@ -686,15 +685,13 @@ function () {
 
       var mz = this._markerCluster._maxZoom;
 
-      var ml = this._map.Overlays.list();
-
       if (mz && zoom > mz || zoom === 20) {
         var len = this._markers.length;
 
         while (len--) {
           var marker = this._markers[len];
 
-          if (!ml.includes(marker)) {
+          if (!marker.active()) {
             this._map.Overlays.add(marker);
           }
         }
