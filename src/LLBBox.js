@@ -46,6 +46,9 @@ export default class{
         return this;
     }
     generateRect(loc1,loc2){
+        if(!loc2){
+            loc2 = loc1;
+        }
         this._locationList.length = 0;
         this.add({"lon":loc1.lon,"lat":loc1.lat});
         this.add({"lon":loc1.lon,"lat":loc2.lat});

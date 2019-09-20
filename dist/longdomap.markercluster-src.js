@@ -188,6 +188,10 @@ function () {
   }, {
     key: "generateRect",
     value: function generateRect(loc1, loc2) {
+      if (!loc2) {
+        loc2 = loc1;
+      }
+
       this._locationList.length = 0;
       this.add({
         "lon": loc1.lon,
@@ -302,6 +306,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cluster", function() { return Cluster; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ClusterIcon", function() { return ClusterIcon; });
 /* harmony import */ var _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./LLBBox.js */ "./src/LLBBox.js");
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -324,15 +336,14 @@ function () {
     this._map = map;
     this._markers = [];
     this._clusters = [];
-    this._styles = options.styles || [];
     this._prevZoom = 2;
     this._maxZoom = options.maxZoom || null;
     this._minClusterSize = options.minClusterSize || 2;
     this.sizes = [53, 56, 66, 78, 90];
     this._ready = false;
     this._gridSize = options.gridSize || 120;
-    this._averageCenter = true;
-    this._drawMarkerArea = true;
+    this._averageCenter = false;
+    this._drawMarkerArea = false;
 
     this._calculator = function (markers) {
       var count = markers.length;
@@ -342,18 +353,24 @@ function () {
       };
     };
 
-    var that = this;
-    this._clusterMarkerImage = new Image();
+    this._iloader = new IconLoader(this);
 
-    this._clusterMarkerImage.onload = function () {
+    if (options.styles) {
+      this._iloader.loadStyles(options.styles);
+    }
+
+    var that = this;
+
+    this._map.Event.bind('ready', function () {
+      if (!that._ready) {
+        return;
+      }
+
       that._prevZoom = that._map.zoom;
-      that._ready = true;
       that.resetViewport();
 
       that._createClusters();
-    };
-
-    this._clusterMarkerImage.src = './m1.png';
+    });
 
     this._map.Event.bind('zoom', function ()
     /*pivot*/
@@ -391,10 +408,10 @@ function () {
     });
     /*
     this._map.Event.bind('drag', function(move){
-        if(that.ready && move.x === 0 && move.y === 0){
-            that.resetViewport();
-            that._createClusters();
-        }
+     if(that._ready){
+         that.resetViewport();
+         that._createClusters();
+     }
     });
     */
 
@@ -410,7 +427,15 @@ function () {
         var cl = that._clusters[len];
 
         if (overlay === cl._clusterIcon._clusterMarker) {
-          that._map.bound(cl._bounds.getMinimumBounds());
+          var l = [];
+          var len2 = cl._markers.length;
+
+          while (len2--) {
+            l.push(cl._markers[len2].location());
+          } //that._map.bound(cl._bounds.getBounds());
+
+
+          that._map.bound(longdo.Util.locationBound(l));
 
           setTimeout(function () {
             that.resetViewport();
@@ -625,7 +650,7 @@ function () {
     this._center = null;
     this._markers = [];
     this._bounds = null;
-    this._clusterIcon = new ClusterIcon(this, {}, this._markerCluster._gridSize);
+    this._clusterIcon = new ClusterIcon(this);
   }
 
   _createClass(Cluster, [{
@@ -695,7 +720,7 @@ function () {
   }, {
     key: "_calculateBounds",
     value: function _calculateBounds() {
-      this._bounds = this._markerCluster.getExtendedBounds(new _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__["default"]().generateRect(this._center, this._center));
+      this._bounds = this._markerCluster.getExtendedBounds(new _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__["default"]().generateRect(this._center));
     }
   }, {
     key: "updateIcon",
@@ -757,31 +782,19 @@ function () {
 var ClusterIcon =
 /*#__PURE__*/
 function () {
-  function ClusterIcon(cluster, styles) {
+  function ClusterIcon(cluster) {
     _classCallCheck(this, ClusterIcon);
 
-    this._styles = styles;
     this._cluster = cluster;
     this._center = null;
     this._map = cluster._map;
     this._visible = false;
-    this._clusterMarker = null;
     this._sums = null;
     this._clusterMarker = new longdo.Marker({
       "lat": 0,
       "lon": 0
     }, {
-      "icon": {
-        "html": "<div style=\"width:52px;height:52px;background:url(./m1.png) no-repeat center top;color:red;line-height:52px;amrgin:0;padding:0;position:relative;top:-26px;left:-26px;\"><div style='margin-left:22px;font-weight:bold;'>-1</div></div>",
-        "offset": {
-          "x": 0,
-          "y": 0
-        },
-        "size": {
-          "width": 53,
-          "height": 53
-        }
-      },
+      "icon": this._cluster._markerCluster._iloader.getIcon(0),
       "weight": longdo.OverlayWeight.Top
     });
   }
@@ -862,13 +875,156 @@ function () {
       this.index = sums.index;
 
       if (this._clusterMarker && this._clusterMarker.element()) {
-        this._clusterMarker.element().children[0].children[0].innerHTML = this._sums.text;
-        this._clusterMarker.title = "(id:".concat(this._cluster._cid, ")").concat(this._sums.text);
+        this._cluster._markerCluster._iloader.changeNumber(this._clusterMarker.element(), this._sums.text);
       }
     }
   }]);
 
   return ClusterIcon;
+}();
+
+var IconLoader =
+/*#__PURE__*/
+function () {
+  function IconLoader(markercluster) {
+    _classCallCheck(this, IconLoader);
+
+    this._markerCluster = markercluster;
+    this._images = new Map();
+    this.ready = false;
+    this.useDefault = true;
+  }
+
+  _createClass(IconLoader, [{
+    key: "load",
+    value: function load(url, width, height, minThreshold) {
+      this.ready = false;
+      this.useDefault = false;
+      var img = new Image(width, height);
+
+      this._images.set(img, {
+        "ready": false,
+        "minThreshold": minThreshold
+      });
+
+      var that = this;
+
+      img.onload = function () {
+        that._images.get(img).ready = true;
+
+        if (_toConsumableArray(that._images.values()).every(function (elm) {
+          return elm.ready;
+        })) {
+          that.ready = true;
+
+          that._markerCluster.resetViewport();
+
+          that._markerCluster._createClusters();
+        }
+      };
+
+      img.src = url;
+      return this._images.keys.length - 1;
+    }
+  }, {
+    key: "loadStyles",
+    value: function loadStyles(styles) {
+      styles.sort(function (elm1, elm2) {
+        return elm1.minThreshold < elm2.minThreshold ? 1 : elm1.minThreshold === elm2.minThreshold ? 0 : -1;
+      });
+      var len = styles.length;
+
+      while (len--) {
+        var style = styles[len];
+        this.load(style.url, style.width, style.height, style.minThreshold);
+      }
+    }
+  }, {
+    key: "getIcon",
+    value: function getIcon(index) {
+      var result = {
+        "offset": {
+          "x": 0,
+          "y": 0
+        }
+      };
+
+      if (this.useDefault || typeof index === 'undefined') {
+        var elm = document.createElement("div");
+        var elm2 = document.createElement('div');
+        var elm3 = document.createElement('span');
+        elm.appendChild(elm2);
+        elm2.appendChild(elm3);
+        elm.style.width = '40px';
+        elm.style.height = '40px';
+        elm.style.marginLeft = '-20px';
+        elm.style.marginTop = '-20px';
+        elm.style.overflow = 'hidden';
+        elm.className += ' marker-cluster marker-cluster-small leaflet-marker-icon';
+        result.html = elm.outerHTML;
+        result.size = {
+          "width": 40,
+          "height": 40
+        };
+      } else {
+        var img = _toConsumableArray(this._images.keys())[index];
+
+        var _elm = document.createElement("div");
+
+        _elm.style.width = "".concat(img.width, "px");
+        _elm.style.height = "".concat(img.height, "px");
+        _elm.style.background = "url('".concat(encodeURI(img.src), "') no-repeat center top");
+        _elm.style.lineHeight = _elm.style.height;
+        _elm.style.color = 'red';
+        _elm.style.fontWeight = 'bold';
+        _elm.style.textAlign = 'center';
+        result.html = _elm.outerHTML;
+        result.size = {
+          "width": img.width,
+          "height": img.height
+        };
+      }
+
+      return result;
+    }
+  }, {
+    key: "changeNumber",
+    value: function changeNumber(element, text) {
+      var num = parseInt(text, 10);
+
+      if (this.useDefault) {
+        element.children[0].children[0].children[0].innerText = text;
+        var list = element.children[0].classList;
+        list.remove('marker-cluster-large');
+        list.remove('marker-cluster-medium');
+        list.remove('marker-cluster-small');
+
+        if (num < 10) {
+          list.add('marker-cluster-small');
+        } else if (num < 100) {
+          list.add('marker-cluster-medium');
+        } else {
+          list.add('marker-cluster-large');
+        }
+      } else {
+        element.children[0].innerText = text;
+
+        var _list = _toConsumableArray(this._images.keys());
+
+        var len = _list.length;
+
+        while (len--) {
+          var img = _list[len];
+
+          if (num > this._images.get(img).minThreshold) {
+            element.children[0].style.background = "url('".concat(encodeURI(img.src), "') no-repeat center top");
+          }
+        }
+      }
+    }
+  }]);
+
+  return IconLoader;
 }();
 
 /***/ }),

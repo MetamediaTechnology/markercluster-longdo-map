@@ -9,29 +9,30 @@ export default class MarkerCluster{
         this._map = map;
         this._markers = [];
         this._clusters = [];
-        this._styles = options.styles || [];
         this._prevZoom = 2;
         this._maxZoom = options.maxZoom || null;
         this._minClusterSize = options.minClusterSize || 2;
         this.sizes = [53,56,66,78,90];
         this._ready = false;
         this._gridSize = options.gridSize || 120;
-        this._averageCenter = true;
-        this._drawMarkerArea = true;
+        this._averageCenter = false;
+        this._drawMarkerArea = false;
         this._calculator = function(markers){
             const count = markers.length;
             return {'index': 0,'text': ''+ count};
         };
 
+        this._iloader = new IconLoader(this);
+        if(options.styles){
+            this._iloader.loadStyles(options.styles);
+        }
         const that = this;
-        this._clusterMarkerImage = new Image();
-        this._clusterMarkerImage.onload = function(){
+        this._map.Event.bind('ready',function() {
+            if(!that._ready){return;}
             that._prevZoom = that._map.zoom;
-            that._ready = true;
             that.resetViewport();
             that._createClusters();
-        };
-        this._clusterMarkerImage.src = './m1.png';
+        });
         this._map.Event.bind('zoom', function (/*pivot*/){
             if(!that._ready){return;}
             const zoom = that._map.zoom();
@@ -50,10 +51,9 @@ export default class MarkerCluster{
             if(!that._ready){return;}
             that.resetViewport();
             that._createClusters();
-        });
-        /*
+        });/*
         this._map.Event.bind('drag', function(move){
-            if(that.ready && move.x === 0 && move.y === 0){
+            if(that._ready){
                 that.resetViewport();
                 that._createClusters();
             }
@@ -65,8 +65,13 @@ export default class MarkerCluster{
             while(len--){
                 const cl = that._clusters[len];
                 if(overlay === cl._clusterIcon._clusterMarker){
-                    
-                    that._map.bound(cl._bounds.getMinimumBounds());
+                    const l = [];
+                    let len2 = cl._markers.length;
+                    while(len2--){
+                        l.push(cl._markers[len2].location());
+                    }
+                    //that._map.bound(cl._bounds.getBounds());
+                    that._map.bound(longdo.Util.locationBound(l));
                     setTimeout(function(){
                         that.resetViewport();
                         that._createClusters();
@@ -216,7 +221,7 @@ export class Cluster{
         this._center = null;
         this._markers = [];
         this._bounds = null;
-        this._clusterIcon = new ClusterIcon(this,{},this._markerCluster._gridSize);
+        this._clusterIcon = new ClusterIcon(this);
     }
 
     addMarker(marker){
@@ -270,7 +275,7 @@ export class Cluster{
 
     _calculateBounds(){
         this._bounds = 
-        this._markerCluster.getExtendedBounds(new LLBBox().generateRect(this._center,this._center));
+        this._markerCluster.getExtendedBounds(new LLBBox().generateRect(this._center));
     }
     updateIcon(){
         const zoom = this._map.zoom();
@@ -309,20 +314,14 @@ export class Cluster{
     }
 }
 export class ClusterIcon{
-    constructor(cluster,styles){
-        this._styles = styles;
+    constructor(cluster){
         this._cluster = cluster;
         this._center = null;
         this._map = cluster._map;
         this._visible = false;
-        this._clusterMarker = null;
         this._sums = null;
         this._clusterMarker = new longdo.Marker({"lat":0,"lon":0},{
-            "icon":{
-                "html": `<div style="width:52px;height:52px;background:url(./m1.png) no-repeat center top;color:red;line-height:52px;amrgin:0;padding:0;position:relative;top:-26px;left:-26px;"><div style='margin-left:22px;font-weight:bold;'>-1</div></div>`,
-                "offset": { "x": 0, "y": 0},
-                "size": {"width":53,"height":53}
-            },
+            "icon": this._cluster._markerCluster._iloader.getIcon(0),
             "weight": longdo.OverlayWeight.Top
         });
     }
@@ -374,8 +373,104 @@ export class ClusterIcon{
         this._sums = sums;
         this.index = sums.index;
         if(this._clusterMarker && this._clusterMarker.element()){
-            this._clusterMarker.element().children[0].children[0].innerHTML = this._sums.text;
-            this._clusterMarker.title = `(id:${this._cluster._cid})${this._sums.text}`;
+            this._cluster._markerCluster._iloader.changeNumber(
+                this._clusterMarker.element(),this._sums.text);
         }
     }
+}
+
+class IconLoader{
+
+    constructor(markercluster){
+        this._markerCluster = markercluster;
+        this._images = new Map();
+        this.ready = false;
+        this.useDefault = true;
+    }
+    load(url,width,height,minThreshold){
+        this.ready = false;
+        this.useDefault = false;
+        const img = new Image(width,height);
+        this._images.set(img,{"ready":false,"minThreshold":minThreshold});
+        const that = this;
+        img.onload = function(){
+            that._images.get(img).ready = true;
+            if([...that._images.values()].every(elm => elm.ready)){
+                that.ready = true;
+                that._markerCluster.resetViewport();
+                that._markerCluster._createClusters();
+            }
+        };
+        img.src = url;
+        return this._images.keys.length - 1;
+    }
+    loadStyles(styles){
+        styles.sort((elm1,elm2) => 
+        elm1.minThreshold < elm2.minThreshold ? 1 : elm1.minThreshold === elm2.minThreshold ?
+         0 : -1); 
+         let len = styles.length;
+         while(len--){
+             const style = styles[len];
+             this.load(style.url,style.width,style.height,style.minThreshold);
+         }
+    }
+    getIcon(index){
+        const result = {"offset": { "x": 0, "y": 0}};
+        if(this.useDefault || typeof index === 'undefined'){
+            const elm = document.createElement("div");
+            const elm2 = document.createElement('div');
+            const elm3 = document.createElement('span');
+            elm.appendChild(elm2);
+            elm2.appendChild(elm3);
+            elm.style.width = '40px';
+            elm.style.height = '40px';
+            elm.style.marginLeft = '-20px';
+            elm.style.marginTop = '-20px';
+            elm.style.overflow = 'hidden';
+            elm.className += ' marker-cluster marker-cluster-small leaflet-marker-icon';
+            result.html = elm.outerHTML;
+            result.size = {"width":40,"height":40};
+        }else{
+            const img = [...this._images.keys()][index];
+            const elm = document.createElement("div");
+            elm.style.width = `${img.width}px`;
+            elm.style.height = `${img.height}px`;
+            elm.style.background = `url('${encodeURI(img.src)}') no-repeat center top`;
+            elm.style.lineHeight = elm.style.height;
+            elm.style.color = 'red';
+            elm.style.fontWeight = 'bold';
+            elm.style.textAlign = 'center';
+            result.html = elm.outerHTML;
+            result.size = {"width":img.width,"height":img.height};
+        }
+        return result;
+    }
+    changeNumber(element,text){
+        const num = parseInt(text,10);
+        if(this.useDefault){
+            element.children[0].children[0].children[0].innerText = text;
+            const list = element.children[0].classList;
+            list.remove('marker-cluster-large');
+            list.remove('marker-cluster-medium');
+            list.remove('marker-cluster-small');
+            if(num < 10){
+                list.add('marker-cluster-small');
+            }else if(num < 100){
+                list.add('marker-cluster-medium');
+            }else{
+                list.add('marker-cluster-large');
+            }
+        }else{
+            element.children[0].innerText = text;
+            const list = [...this._images.keys()];
+            let len = list.length;
+            while(len--){
+                const img = list[len];
+                if(num > this._images.get(img).minThreshold){
+                    element.children[0].style.background = `url('${encodeURI(img.src)}') no-repeat center top`;
+                }
+            }
+        }
+    }
+    
 }
