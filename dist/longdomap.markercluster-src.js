@@ -87,6 +87,34 @@ var lmc =
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/ConfigHandler.js":
+/*!******************************!*\
+  !*** ./src/ConfigHandler.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return _default; });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _default = function _default(options) {
+  _classCallCheck(this, _default);
+
+  this.maxZoom = options.maxZoom || null;
+  this.minClusterSize = options.minClusterSize || 2;
+  this.gridSize = options.gridSize || 120;
+  this.averageCenter = options.averageCenter;
+  this.drawMarkerArea = options.drawMarkerArea;
+  this.extraModeEnabled = options.drawMarkerArea;
+  this.styles = options.styles || null;
+};
+
+
+
+/***/ }),
+
 /***/ "./src/LLBBox.js":
 /*!***********************!*\
   !*** ./src/LLBBox.js ***!
@@ -306,6 +334,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cluster", function() { return Cluster; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ClusterIcon", function() { return ClusterIcon; });
 /* harmony import */ var _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./LLBBox.js */ "./src/LLBBox.js");
+/* harmony import */ var _ConfigHandler_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ConfigHandler.js */ "./src/ConfigHandler.js");
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
@@ -327,6 +356,7 @@ if (typeof window.longdo === 'undefined') {
 var longdo = window.longdo;
 
 
+
 var MarkerCluster =
 /*#__PURE__*/
 function () {
@@ -337,32 +367,13 @@ function () {
     this._markers = [];
     this._clusters = [];
     this._prevZoom = 2;
-    this._maxZoom = options.maxZoom || null;
-    this._minClusterSize = options.minClusterSize || 2;
-    this.sizes = [53, 56, 66, 78, 90];
+    this.config = new _ConfigHandler_js__WEBPACK_IMPORTED_MODULE_1__["default"](options);
     this._ready = false;
-    this._gridSize = options.gridSize || 120;
-    this._averageCenter = false;
-    this._drawMarkerArea = false;
-
-    this._calculator = function (markers) {
-      var count = markers.length;
-      return {
-        'index': 0,
-        'text': '' + count
-      };
-    };
-
-    this._iloader = new IconLoader(this);
-
-    if (options.styles) {
-      this._iloader.loadStyles(options.styles);
-    }
-
+    this._iloader = new IconLoader(this, this.config);
     var that = this;
 
     this._map.Event.bind('ready', function () {
-      if (!that._ready) {
+      if (!that._ready && !that._iloader.ready) {
         return;
       }
 
@@ -375,7 +386,7 @@ function () {
     this._map.Event.bind('zoom', function ()
     /*pivot*/
     {
-      if (!that._ready) {
+      if (!that._ready && !that._iloader.ready) {
         return;
       }
 
@@ -390,7 +401,7 @@ function () {
     });
 
     this._map.Event.bind('idle', function () {
-      if (!that._ready) {
+      if (!that._ready && !that._iloader.ready) {
         return;
       } //that.resetViewport();
       //that._createClusters();
@@ -398,7 +409,7 @@ function () {
     });
 
     this._map.Event.bind('drop', function () {
-      if (!that._ready) {
+      if (!that._ready && !that._iloader.ready) {
         return;
       }
 
@@ -415,6 +426,16 @@ function () {
     });
     */
 
+
+    this._map.Event.bind('loadTile', function (str) {
+      if (str !== 'finish' && !that._ready && !that._iloader.ready) {
+        return;
+      }
+
+      that.resetViewport();
+
+      that._createClusters();
+    });
 
     this._map.Event.bind('overlayClick', function (overlay) {
       if (!that._ready) {
@@ -515,7 +536,7 @@ function () {
       if (clusterToAddTo && clusterToAddTo.isMarkerInClusterBounds(marker)) {
         clusterToAddTo.addMarker(marker);
       } else {
-        var _cluster = new Cluster(this, this._clusters.length);
+        var _cluster = new Cluster(this, this.config);
 
         _cluster.addMarker(marker);
 
@@ -578,7 +599,7 @@ function () {
   }, {
     key: "getExtendedBounds",
     value: function getExtendedBounds(bounds) {
-      bounds.extendSize(this._gridSize * Math.pow(2, -this._map.zoom()));
+      bounds.extendSize(this.config.gridSize * Math.pow(2, -this._map.zoom()));
       return bounds;
     }
   }, {
@@ -642,15 +663,16 @@ function () {
 var Cluster =
 /*#__PURE__*/
 function () {
-  function Cluster(markerCluster) {
+  function Cluster(markerCluster, config) {
     _classCallCheck(this, Cluster);
 
     this._markerCluster = markerCluster;
+    this._config = config;
     this._map = markerCluster._map;
     this._center = null;
     this._markers = [];
     this._bounds = null;
-    this._clusterIcon = new ClusterIcon(this);
+    this._clusterIcon = new ClusterIcon(this, this._config);
   }
 
   _createClass(Cluster, [{
@@ -665,7 +687,7 @@ function () {
 
         this._calculateBounds();
       } else {
-        if (this._markerCluster._averageCenter) {
+        if (this._config.averageCenter) {
           this._center = longdo.Util.averageLocation(longdo.Projections.EPSG3857, this._center, marker.location());
         }
       }
@@ -674,15 +696,20 @@ function () {
 
       this._markers.push(marker);
 
+      if (this._config.extraModeEnabled) {
+        this.updateIcon();
+        return true;
+      }
+
       var len = this._markers.length;
 
-      if (len < this._markerCluster._minClusterSize) {
+      if (len < this._config.minClusterSize) {
         if (!marker.active()) {
           this._map.Overlays.add(marker);
         }
       }
 
-      if (len === this._markerCluster._minClusterSize) {
+      if (len === this._config.minClusterSize) {
         var lenc = len;
 
         while (lenc--) {
@@ -694,7 +721,7 @@ function () {
         }
       }
 
-      if (len >= this._markerCluster._minClusterSize) {
+      if (len >= this._config.minClusterSize) {
         var _lenc = len;
 
         while (_lenc--) {
@@ -727,7 +754,7 @@ function () {
     value: function updateIcon() {
       var zoom = this._map.zoom();
 
-      var mz = this._markerCluster._maxZoom;
+      var mz = this._config.maxZoom;
 
       if (mz && zoom > mz || zoom === 20) {
         var len = this._markers.length;
@@ -743,13 +770,21 @@ function () {
         return;
       }
 
-      if (this._markers.length < this._markerCluster._minClusterSize) {
+      if (this._config.extraModeEnabled) {
+        this._clusterIcon.setCenter(this._center);
+
+        this._clusterIcon.show();
+
+        return;
+      }
+
+      if (this._markers.length < this._config.minClusterSize) {
         this._clusterIcon.hide();
 
         return;
       }
 
-      var sums = this._markerCluster._calculator(this._markers, 0);
+      var sums = this._markers.length;
 
       this._clusterIcon.setCenter(this._center);
 
@@ -782,10 +817,11 @@ function () {
 var ClusterIcon =
 /*#__PURE__*/
 function () {
-  function ClusterIcon(cluster) {
+  function ClusterIcon(cluster, config) {
     _classCallCheck(this, ClusterIcon);
 
     this._cluster = cluster;
+    this._config = config;
     this._center = null;
     this._map = cluster._map;
     this._visible = false;
@@ -802,27 +838,29 @@ function () {
   _createClass(ClusterIcon, [{
     key: "show",
     value: function show() {
-      var pos = this._center;
+      if (!this._config.extraModeEnabled) {
+        var pos = this._center;
 
-      if (this._clusterMarker.active()) {
-        this._map.Overlays.move(this._clusterMarker, pos);
-      } else {
-        this._clusterMarker.setLocation(pos);
+        if (this._clusterMarker.active()) {
+          this._map.Overlays.move(this._clusterMarker, pos);
+        } else {
+          this._clusterMarker.setLocation(pos);
 
-        this._map.Overlays.add(this._clusterMarker);
+          this._map.Overlays.add(this._clusterMarker);
 
-        if (this._poly) {
-          this._map.Overlays.remove(this._poly);
+          if (this._poly) {
+            this._map.Overlays.remove(this._poly);
+          }
+
+          if (this._config.drawMarkerArea) {
+            this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {});
+
+            this._map.Overlays.add(this._poly);
+          }
         }
 
-        if (this._cluster._markerCluster._drawMarkerArea) {
-          this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {});
-
-          this._map.Overlays.add(this._poly);
-        }
+        this._visible = true;
       }
-
-      this._visible = true;
     }
   }, {
     key: "remove",
@@ -842,7 +880,7 @@ function () {
 
       this._visible = false;
 
-      if (this._cluster._markerCluster._drawMarkerArea) {
+      if (this._config.drawMarkerArea) {
         if (!this._poly) {
           this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {});
         }
@@ -867,15 +905,14 @@ function () {
   }, {
     key: "setSums",
     value: function setSums(sums) {
-      if (this._sums && sums.text === this._sums.text) {
+      if (this._sums && sums === this._sums) {
         return;
       }
 
       this._sums = sums;
-      this.index = sums.index;
 
       if (this._clusterMarker && this._clusterMarker.element()) {
-        this._cluster._markerCluster._iloader.changeNumber(this._clusterMarker.element(), this._sums.text);
+        this._cluster._markerCluster._iloader.changeNumber(this._clusterMarker.element(), this._sums);
       }
     }
   }]);
@@ -886,13 +923,18 @@ function () {
 var IconLoader =
 /*#__PURE__*/
 function () {
-  function IconLoader(markercluster) {
+  function IconLoader(markercluster, config) {
     _classCallCheck(this, IconLoader);
 
     this._markerCluster = markercluster;
+    this._config = config;
     this._images = new Map();
     this.ready = false;
     this.useDefault = true;
+
+    if (this._config.styles) {
+      this._iloader.loadStyles(this._config.styles);
+    }
   }
 
   _createClass(IconLoader, [{
@@ -973,9 +1015,11 @@ function () {
 
         _elm.style.width = "".concat(img.width, "px");
         _elm.style.height = "".concat(img.height, "px");
+        _elm.style.marginLeft = "-".concat(img.width / 2, "px");
+        _elm.style.marginTop = "-".concat(img.height / 2, "px");
         _elm.style.background = "url('".concat(encodeURI(img.src), "') no-repeat center top");
         _elm.style.lineHeight = _elm.style.height;
-        _elm.style.color = 'red';
+        _elm.style.color = 'black';
         _elm.style.fontWeight = 'bold';
         _elm.style.textAlign = 'center';
         result.html = _elm.outerHTML;
@@ -989,11 +1033,9 @@ function () {
     }
   }, {
     key: "changeNumber",
-    value: function changeNumber(element, text) {
-      var num = parseInt(text, 10);
-
+    value: function changeNumber(element, num) {
       if (this.useDefault) {
-        element.children[0].children[0].children[0].innerText = text;
+        element.children[0].children[0].children[0].innerText = "".concat(num);
         var list = element.children[0].classList;
         list.remove('marker-cluster-large');
         list.remove('marker-cluster-medium');
@@ -1007,7 +1049,7 @@ function () {
           list.add('marker-cluster-large');
         }
       } else {
-        element.children[0].innerText = text;
+        element.children[0].innerText = "".concat(num);
 
         var _list = _toConsumableArray(this._images.keys());
 
@@ -1016,8 +1058,16 @@ function () {
         while (len--) {
           var img = _list[len];
 
-          if (num > this._images.get(img).minThreshold) {
-            element.children[0].style.background = "url('".concat(encodeURI(img.src), "') no-repeat center top");
+          if (num >= this._images.get(img).minThreshold) {
+            var elm = element;
+            elm.style.width = "".concat(img.width, "px");
+            elm.style.height = "".concat(img.height, "px");
+            elm = elm.children[0];
+            elm.style.background = "url('".concat(encodeURI(img.src), "') no-repeat center top");
+            elm.style.width = "".concat(img.width, "px");
+            elm.style.height = "".concat(img.height, "px");
+            elm.style.lineHeight = elm.style.height;
+            break;
           }
         }
       }

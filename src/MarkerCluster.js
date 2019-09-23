@@ -3,6 +3,7 @@ if(typeof window.longdo === 'undefined'){
 }
 const longdo = window.longdo;
 import LLBBox from "./LLBBox.js";
+import Config from "./ConfigHandler.js";
 export default class MarkerCluster{
 
     constructor(map, options){
@@ -10,31 +11,19 @@ export default class MarkerCluster{
         this._markers = [];
         this._clusters = [];
         this._prevZoom = 2;
-        this._maxZoom = options.maxZoom || null;
-        this._minClusterSize = options.minClusterSize || 2;
-        this.sizes = [53,56,66,78,90];
+        this.config = new Config(options);
         this._ready = false;
-        this._gridSize = options.gridSize || 120;
-        this._averageCenter = false;
-        this._drawMarkerArea = false;
-        this._calculator = function(markers){
-            const count = markers.length;
-            return {'index': 0,'text': ''+ count};
-        };
-
-        this._iloader = new IconLoader(this);
-        if(options.styles){
-            this._iloader.loadStyles(options.styles);
-        }
+        this._iloader = new IconLoader(this,this.config);
+        
         const that = this;
         this._map.Event.bind('ready',function() {
-            if(!that._ready){return;}
+            if(!that._ready && !that._iloader.ready){return;}
             that._prevZoom = that._map.zoom;
             that.resetViewport();
             that._createClusters();
         });
         this._map.Event.bind('zoom', function (/*pivot*/){
-            if(!that._ready){return;}
+            if(!that._ready && !that._iloader.ready){return;}
             const zoom = that._map.zoom();
             if(that._prevZoom !== zoom){
                 that._prevZoom = zoom;
@@ -43,12 +32,12 @@ export default class MarkerCluster{
             }
         });
         this._map.Event.bind('idle',function() {
-            if(!that._ready){return;}
+            if(!that._ready && !that._iloader.ready){return;}
             //that.resetViewport();
             //that._createClusters();
         });
         this._map.Event.bind('drop',function() {
-            if(!that._ready){return;}
+            if(!that._ready && !that._iloader.ready){return;}
             that.resetViewport();
             that._createClusters();
         });/*
@@ -59,6 +48,11 @@ export default class MarkerCluster{
             }
         });
         */
+       this._map.Event.bind('loadTile',function(str) {
+            if(str !== 'finish' && !that._ready && !that._iloader.ready){return;}
+            that.resetViewport();
+            that._createClusters();
+        });
         this._map.Event.bind('overlayClick', function(overlay){
             if(!that._ready){return;}
             let len = that._clusters.length;
@@ -128,7 +122,7 @@ export default class MarkerCluster{
         if(clusterToAddTo && clusterToAddTo.isMarkerInClusterBounds(marker)){
             clusterToAddTo.addMarker(marker);
         }else{
-            const cluster = new Cluster(this,this._clusters.length);
+            const cluster = new Cluster(this,this.config);
             cluster.addMarker(marker);
             this._clusters.push(cluster);
         }
@@ -171,7 +165,7 @@ export default class MarkerCluster{
     }
 
     getExtendedBounds(bounds){
-        bounds.extendSize(this._gridSize*Math.pow(2,-this._map.zoom()));
+        bounds.extendSize(this.config.gridSize*Math.pow(2,-this._map.zoom()));
         return bounds;
     }
 
@@ -214,14 +208,15 @@ export default class MarkerCluster{
 
 export class Cluster{
 
-    constructor(markerCluster){
+    constructor(markerCluster,config){
         this._markerCluster = markerCluster;
+        this._config = config;
         this._map = markerCluster._map;
         
         this._center = null;
         this._markers = [];
         this._bounds = null;
-        this._clusterIcon = new ClusterIcon(this);
+        this._clusterIcon = new ClusterIcon(this,this._config);
     }
 
     addMarker(marker){
@@ -232,7 +227,7 @@ export class Cluster{
             this._center = marker.location();
             this._calculateBounds();
         }else{
-            if(this._markerCluster._averageCenter){
+            if(this._config.averageCenter){
                 this._center = longdo.Util.averageLocation(longdo.Projections.EPSG3857,
                     this._center,marker.location());
             }
@@ -240,13 +235,18 @@ export class Cluster{
         marker.isAdded = true;
         this._markers.push(marker);
 
+        if(this._config.extraModeEnabled){
+            this.updateIcon();
+            return true;
+        }
+
         const len = this._markers.length;
-        if (len < this._markerCluster._minClusterSize){
+        if (len < this._config.minClusterSize){
             if(!marker.active()){
                 this._map.Overlays.add(marker);
             }
         }
-        if(len === this._markerCluster._minClusterSize){
+        if(len === this._config.minClusterSize){
             let lenc = len;
             while(lenc--){
                 const m = this._markers[lenc];
@@ -255,7 +255,7 @@ export class Cluster{
                 }
             }
         }
-        if(len >= this._markerCluster._minClusterSize){
+        if(len >= this._config.minClusterSize){
             let lenc = len;
             while(lenc--){
                 const m = this._markers[lenc];
@@ -279,7 +279,7 @@ export class Cluster{
     }
     updateIcon(){
         const zoom = this._map.zoom();
-        const mz = this._markerCluster._maxZoom;
+        const mz = this._config.maxZoom;
         if(mz && zoom > mz || zoom === 20){
             let len = this._markers.length;
             while(len--){
@@ -290,11 +290,18 @@ export class Cluster{
             }
             return;
         }
-        if(this._markers.length < this._markerCluster._minClusterSize){
+
+        if(this._config.extraModeEnabled){
+            this._clusterIcon.setCenter(this._center);
+            this._clusterIcon.show();
+            return;
+        }
+
+        if(this._markers.length < this._config.minClusterSize){
             this._clusterIcon.hide();
             return;
         }
-        const sums = this._markerCluster._calculator(this._markers,0);
+        const sums = this._markers.length;
         this._clusterIcon.setCenter(this._center);
         this._clusterIcon.setSums(sums);
         this._clusterIcon.show();
@@ -314,8 +321,9 @@ export class Cluster{
     }
 }
 export class ClusterIcon{
-    constructor(cluster){
+    constructor(cluster,config){
         this._cluster = cluster;
+        this._config = config;
         this._center = null;
         this._map = cluster._map;
         this._visible = false;
@@ -327,21 +335,23 @@ export class ClusterIcon{
     }
 
     show(){
-        const pos = this._center;
-        if(this._clusterMarker.active()){
-            this._map.Overlays.move(this._clusterMarker,pos);
-        }else{
-            this._clusterMarker.setLocation(pos);
-            this._map.Overlays.add(this._clusterMarker);
-            if(this._poly){
-                this._map.Overlays.remove(this._poly);
+        if(!this._config.extraModeEnabled){
+            const pos = this._center;
+            if(this._clusterMarker.active()){
+                this._map.Overlays.move(this._clusterMarker,pos);
+            }else{
+                this._clusterMarker.setLocation(pos);
+                this._map.Overlays.add(this._clusterMarker);
+                if(this._poly){
+                    this._map.Overlays.remove(this._poly);
+                }
+                if(this._config.drawMarkerArea){
+                    this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{});
+                    this._map.Overlays.add(this._poly);
+                }
             }
-            if(this._cluster._markerCluster._drawMarkerArea){
-                this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{});
-                this._map.Overlays.add(this._poly);
-            }
+            this._visible = true;
         }
-        this._visible = true;
     }
     remove(){
         this._map.Overlays.remove(this._clusterMarker);
@@ -353,7 +363,7 @@ export class ClusterIcon{
     hide(){
         this._map.Overlays.remove(this._clusterMarker);
         this._visible = false;
-        if(this._cluster._markerCluster._drawMarkerArea){
+        if(this._config.drawMarkerArea){
             if(!this._poly){
                 this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{});
             }
@@ -369,23 +379,26 @@ export class ClusterIcon{
         }
     }
     setSums(sums){
-        if(this._sums && sums.text === this._sums.text){return;}
+        if(this._sums && sums === this._sums){return;}
         this._sums = sums;
-        this.index = sums.index;
         if(this._clusterMarker && this._clusterMarker.element()){
             this._cluster._markerCluster._iloader.changeNumber(
-                this._clusterMarker.element(),this._sums.text);
+                this._clusterMarker.element(),this._sums);
         }
     }
 }
 
 class IconLoader{
 
-    constructor(markercluster){
+    constructor(markercluster,config){
         this._markerCluster = markercluster;
+        this._config = config;
         this._images = new Map();
         this.ready = false;
         this.useDefault = true;
+        if(this._config.styles){
+            this._iloader.loadStyles(this._config.styles);
+        }
     }
     load(url,width,height,minThreshold){
         this.ready = false;
@@ -435,9 +448,11 @@ class IconLoader{
             const elm = document.createElement("div");
             elm.style.width = `${img.width}px`;
             elm.style.height = `${img.height}px`;
+            elm.style.marginLeft = `-${img.width/2}px`;
+            elm.style.marginTop = `-${img.height/2}px`;
             elm.style.background = `url('${encodeURI(img.src)}') no-repeat center top`;
             elm.style.lineHeight = elm.style.height;
-            elm.style.color = 'red';
+            elm.style.color = 'black';
             elm.style.fontWeight = 'bold';
             elm.style.textAlign = 'center';
             result.html = elm.outerHTML;
@@ -445,10 +460,9 @@ class IconLoader{
         }
         return result;
     }
-    changeNumber(element,text){
-        const num = parseInt(text,10);
+    changeNumber(element,num){
         if(this.useDefault){
-            element.children[0].children[0].children[0].innerText = text;
+            element.children[0].children[0].children[0].innerText = `${num}`;
             const list = element.children[0].classList;
             list.remove('marker-cluster-large');
             list.remove('marker-cluster-medium');
@@ -461,13 +475,21 @@ class IconLoader{
                 list.add('marker-cluster-large');
             }
         }else{
-            element.children[0].innerText = text;
+            element.children[0].innerText = `${num}`;
             const list = [...this._images.keys()];
             let len = list.length;
             while(len--){
                 const img = list[len];
-                if(num > this._images.get(img).minThreshold){
-                    element.children[0].style.background = `url('${encodeURI(img.src)}') no-repeat center top`;
+                if(num >= this._images.get(img).minThreshold){
+                    let elm = element;
+                    elm.style.width = `${img.width}px`;
+                    elm.style.height = `${img.height}px`;
+                    elm = elm.children[0];
+                    elm.style.background = `url('${encodeURI(img.src)}') no-repeat center top`;
+                    elm.style.width = `${img.width}px`;
+                    elm.style.height = `${img.height}px`;
+                    elm.style.lineHeight = elm.style.height;
+                    break;
                 }
             }
         }
