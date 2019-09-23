@@ -107,7 +107,7 @@ var _default = function _default(options) {
   this.gridSize = options.gridSize || 120;
   this.averageCenter = options.averageCenter;
   this.drawMarkerArea = options.drawMarkerArea;
-  this.extraModeEnabled = options.drawMarkerArea;
+  this.extraModeEnabled = options.extraModeEnabled;
   this.styles = options.styles || null;
 };
 
@@ -367,8 +367,8 @@ function () {
     this._markers = [];
     this._clusters = [];
     this._prevZoom = 2;
-    this.config = new _ConfigHandler_js__WEBPACK_IMPORTED_MODULE_1__["default"](options);
     this._ready = false;
+    this.config = new _ConfigHandler_js__WEBPACK_IMPORTED_MODULE_1__["default"](options);
     this._iloader = new IconLoader(this, this.config);
     var that = this;
 
@@ -536,7 +536,7 @@ function () {
       if (clusterToAddTo && clusterToAddTo.isMarkerInClusterBounds(marker)) {
         clusterToAddTo.addMarker(marker);
       } else {
-        var _cluster = new Cluster(this, this.config);
+        var _cluster = new Cluster(this, this.config, this._iloader);
 
         _cluster.addMarker(marker);
 
@@ -663,7 +663,7 @@ function () {
 var Cluster =
 /*#__PURE__*/
 function () {
-  function Cluster(markerCluster, config) {
+  function Cluster(markerCluster, config, iloader) {
     _classCallCheck(this, Cluster);
 
     this._markerCluster = markerCluster;
@@ -672,7 +672,7 @@ function () {
     this._center = null;
     this._markers = [];
     this._bounds = null;
-    this._clusterIcon = new ClusterIcon(this, this._config);
+    this._clusterIcon = new ClusterIcon(this, this._config, iloader);
   }
 
   _createClass(Cluster, [{
@@ -697,6 +697,15 @@ function () {
       this._markers.push(marker);
 
       if (this._config.extraModeEnabled) {
+        //TODO
+        var _len = this._markers.length;
+
+        while (_len--) {
+          if (!marker.active()) {
+            this._map.Overlays.add(marker);
+          }
+        }
+
         this.updateIcon();
         return true;
       }
@@ -771,6 +780,7 @@ function () {
       }
 
       if (this._config.extraModeEnabled) {
+        //TODO
         this._clusterIcon.setCenter(this._center);
 
         this._clusterIcon.show();
@@ -817,11 +827,12 @@ function () {
 var ClusterIcon =
 /*#__PURE__*/
 function () {
-  function ClusterIcon(cluster, config) {
+  function ClusterIcon(cluster, config, iloader) {
     _classCallCheck(this, ClusterIcon);
 
     this._cluster = cluster;
     this._config = config;
+    this._iloader = iloader;
     this._center = null;
     this._map = cluster._map;
     this._visible = false;
@@ -912,7 +923,7 @@ function () {
       this._sums = sums;
 
       if (this._clusterMarker && this._clusterMarker.element()) {
-        this._cluster._markerCluster._iloader.changeNumber(this._clusterMarker.element(), this._sums);
+        this._iloader.changeNumber(this._clusterMarker.element(), this._sums);
       }
     }
   }]);
@@ -933,7 +944,7 @@ function () {
     this.useDefault = true;
 
     if (this._config.styles) {
-      this._iloader.loadStyles(this._config.styles);
+      this.loadStyles(this._config.styles);
     }
   }
 

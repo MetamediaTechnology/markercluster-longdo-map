@@ -11,8 +11,8 @@ export default class MarkerCluster{
         this._markers = [];
         this._clusters = [];
         this._prevZoom = 2;
-        this.config = new Config(options);
         this._ready = false;
+        this.config = new Config(options);
         this._iloader = new IconLoader(this,this.config);
         
         const that = this;
@@ -122,7 +122,7 @@ export default class MarkerCluster{
         if(clusterToAddTo && clusterToAddTo.isMarkerInClusterBounds(marker)){
             clusterToAddTo.addMarker(marker);
         }else{
-            const cluster = new Cluster(this,this.config);
+            const cluster = new Cluster(this,this.config,this._iloader);
             cluster.addMarker(marker);
             this._clusters.push(cluster);
         }
@@ -208,7 +208,7 @@ export default class MarkerCluster{
 
 export class Cluster{
 
-    constructor(markerCluster,config){
+    constructor(markerCluster,config,iloader){
         this._markerCluster = markerCluster;
         this._config = config;
         this._map = markerCluster._map;
@@ -216,7 +216,7 @@ export class Cluster{
         this._center = null;
         this._markers = [];
         this._bounds = null;
-        this._clusterIcon = new ClusterIcon(this,this._config);
+        this._clusterIcon = new ClusterIcon(this,this._config,iloader);
     }
 
     addMarker(marker){
@@ -236,6 +236,13 @@ export class Cluster{
         this._markers.push(marker);
 
         if(this._config.extraModeEnabled){
+            //TODO
+            let len = this._markers.length;
+            while(len--){
+                if(!marker.active()){
+                    this._map.Overlays.add(marker);
+                }
+            }
             this.updateIcon();
             return true;
         }
@@ -292,6 +299,7 @@ export class Cluster{
         }
 
         if(this._config.extraModeEnabled){
+            //TODO
             this._clusterIcon.setCenter(this._center);
             this._clusterIcon.show();
             return;
@@ -321,9 +329,10 @@ export class Cluster{
     }
 }
 export class ClusterIcon{
-    constructor(cluster,config){
+    constructor(cluster,config,iloader){
         this._cluster = cluster;
         this._config = config;
+        this._iloader = iloader;
         this._center = null;
         this._map = cluster._map;
         this._visible = false;
@@ -382,8 +391,7 @@ export class ClusterIcon{
         if(this._sums && sums === this._sums){return;}
         this._sums = sums;
         if(this._clusterMarker && this._clusterMarker.element()){
-            this._cluster._markerCluster._iloader.changeNumber(
-                this._clusterMarker.element(),this._sums);
+            this._iloader.changeNumber(this._clusterMarker.element(),this._sums);
         }
     }
 }
@@ -397,7 +405,7 @@ class IconLoader{
         this.ready = false;
         this.useDefault = true;
         if(this._config.styles){
-            this._iloader.loadStyles(this._config.styles);
+            this.loadStyles(this._config.styles);
         }
     }
     load(url,width,height,minThreshold){

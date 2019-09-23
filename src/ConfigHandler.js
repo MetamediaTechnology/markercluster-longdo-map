@@ -5,7 +5,7 @@ export default class {
         this.gridSize = options.gridSize || 120;
         this.averageCenter = options.averageCenter;
         this.drawMarkerArea = options.drawMarkerArea;
-        this.extraModeEnabled = options.drawMarkerArea;
+        this.extraModeEnabled = options.extraModeEnabled;
         this.styles = options.styles || null;
     }
 }
