@@ -2,7 +2,7 @@ import {ClusterIcon} from './Icon';
 import LLBBox from './LLBBox';
 const longdo = window.longdo;
 export default class{
-
+    
     constructor(markerCluster,config,iloader){
         this._markerCluster = markerCluster;
         this._config = config;
@@ -30,7 +30,7 @@ export default class{
         marker.isAdded = true;
         this._markers.push(marker);
 
-        if(this._config.extraModeEnabled){
+        if(this._config.swarmModeEnabled){
             //TODO
             if(!this._gridids){
                 this._gridids = [];
@@ -115,7 +115,8 @@ export default class{
             return;
         }
 
-        if(this._config.extraModeEnabled){
+        if(this._config.swarmModeEnabled){
+            
             //TODO
             return;
         }

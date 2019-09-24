@@ -1229,24 +1229,6 @@ function () {
 
       this._clusters = [];
     }
-  }, {
-    key: "repaint",
-    value: function repaint() {
-      var oldClusters = this._clusters().slice();
-
-      this._clusters.length = 0;
-      this.resetViewport();
-
-      this._createClusters();
-
-      setTimeout(function () {
-        var len = oldClusters.length;
-
-        while (len--) {
-          oldClusters[len].remove();
-        }
-      }, 0);
-    }
   }]);
 
   return MarkerCluster;

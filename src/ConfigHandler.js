@@ -5,7 +5,8 @@ export default class {
         this.gridSize = options.gridSize || 120;
         this.averageCenter = options.averageCenter;
         this.drawMarkerArea = options.drawMarkerArea;
-        this.extraModeEnabled = options.extraModeEnabled;
+        this.swarmModeEnabled = options.swarmModeEnabled;
+        this.swarmAlg = options.swarmAlg;
         this.styles = options.styles || null;
     }
 }

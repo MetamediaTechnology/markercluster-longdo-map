@@ -15,7 +15,7 @@ export class ClusterIcon{
     }
 
     show(){
-        if(!this._config.extraModeEnabled){
+        if(!this._config.swarmModeEnabled){
             const pos = this._center;
             if(this._clusterMarker.active()){
                 this._map.Overlays.move(this._clusterMarker,pos);
