@@ -160,6 +160,38 @@ function () {
       };
     }
   }, {
+    key: "LT",
+    value: function LT() {
+      return {
+        "lon": this._bounds.minLon,
+        "lat": this._bounds.maxLat
+      };
+    }
+  }, {
+    key: "RT",
+    value: function RT() {
+      return {
+        "lon": this._bounds.maxLon,
+        "lat": this._bounds.maxLat
+      };
+    }
+  }, {
+    key: "LB",
+    value: function LB() {
+      return {
+        "lon": this._bounds.minLon,
+        "lat": this._bounds.minLat
+      };
+    }
+  }, {
+    key: "RB",
+    value: function RB() {
+      return {
+        "lon": this._bounds.maxLon,
+        "lat": this._bounds.minLat
+      };
+    }
+  }, {
     key: "getMinimumBounds",
     value: function getMinimumBounds() {
       var b = longdo.Util.locationBound(this._originalLocationList);
@@ -297,6 +329,26 @@ function () {
         "lon": this._bounds.maxLon,
         "lat": this._bounds.minLat
       }];
+    }
+  }, {
+    key: "getNxNGridCord",
+    value: function getNxNGridCord(loc, n) {
+      if (!this.isLocInBounds(loc)) {
+        return null;
+      }
+
+      var xlen = (this._bounds.maxLon - this._bounds.minLon) / n;
+      var ylen = (this._lat2y(this._bounds.maxLat) - this._lat2y(this._bounds.minLat)) / n;
+      var lonoffset = loc.lon - this._bounds.minLon;
+
+      var yoffset = -this._lat2y(loc.lat) + this._lat2y(this._bounds.maxLat);
+
+      var xid = Math.floor(lonoffset / xlen),
+          yid = Math.floor(yoffset / ylen);
+      return {
+        "u": xid,
+        "v": yid
+      };
     }
     /*
     Adapted from https://wiki.openstreetmap.org/wiki/Mercator
@@ -483,6 +535,18 @@ function () {
 
         this._markers.push(m);
       }
+
+      this.shuffle();
+    }
+  }, {
+    key: "shuffle",
+    value: function shuffle() {
+      for (var i = this._markers.length - 1; i > 0; i--) {
+        var r = Math.floor(Math.random() * (i + 1));
+        var temp = this._markers[i];
+        this._markers[i] = this._markers[r];
+        this._markers[r] = temp;
+      }
     }
   }, {
     key: "render",
@@ -508,7 +572,11 @@ function () {
         var loc = m.location();
 
         if (!m.isAdded && bounds.isLocInBounds(loc)) {
-          this._addToClosestCluster(m);
+          if (!this.config.extraModeEnabled) {
+            this._addToClosestCluster(m);
+          } else {
+            this._addToTiledCluster(m);
+          }
         }
       }
     }
@@ -542,6 +610,37 @@ function () {
 
         this._clusters.push(_cluster);
       }
+    }
+  }, {
+    key: "_addToTiledCluster",
+    value: function _addToTiledCluster(marker) {
+      var that = this;
+
+      var locationToTile = function locationToTile(loc) {
+        var point = longdo.Util.locationToPoint(longdo.Projections.EPSG3857, loc);
+        point.z = 20 - that._map.zoom();
+        return longdo.Util.pointToTile(point);
+      };
+
+      var tile = locationToTile(marker.location());
+      var len = this._clusters.length;
+
+      while (len--) {
+        var _cluster2 = this._clusters[len];
+
+        if (_cluster2.u === tile.u && _cluster2.v === tile.v) {
+          _cluster2.addMarker(marker, tile);
+
+          return;
+        }
+      }
+
+      var cluster = new Cluster(this, this.config, this._iloader);
+      cluster.u = tile.u;
+      cluster.v = tile.v;
+      cluster.addMarker(marker, tile);
+
+      this._clusters.push(cluster);
     }
   }, {
     key: "_removeMarker",
@@ -677,7 +776,7 @@ function () {
 
   _createClass(Cluster, [{
     key: "addMarker",
-    value: function addMarker(marker) {
+    value: function addMarker(marker, tile) {
       if (this._markers.indexOf(marker) !== -1) {
         return false;
       }
@@ -698,12 +797,34 @@ function () {
 
       if (this._config.extraModeEnabled) {
         //TODO
-        var _len = this._markers.length;
+        if (!this._gridids) {
+          this._gridids = [];
+        }
 
-        while (_len--) {
-          if (!marker.active()) {
-            this._map.Overlays.add(marker);
+        this._gridids.push(new _LLBBox_js__WEBPACK_IMPORTED_MODULE_0__["default"]().generateFrom(longdo.Util.boundOfTile(longdo.Projections.EPSG3857, tile)).getNxNGridCord(marker.location(), 4));
+
+        if (!this._markersToShow) {
+          this._markersToShow = [marker];
+        } else if (this._markersToShow.length <= 64) {
+          var markersInSameGrid = 0;
+          var that = this;
+
+          this._gridids.forEach(function (value) {
+            var gridid = that._gridids[that._gridids.length - 1];
+            markersInSameGrid += gridid.u === value.u && gridid.v === value.v ? 1 : 0;
+          });
+
+          if (markersInSameGrid % 8 !== 0) {
+            return true;
           }
+
+          this._markersToShow.push(marker);
+        } else {
+          return true;
+        }
+
+        if (!marker.active()) {
+          this._map.Overlays.add(marker);
         }
 
         this.updateIcon();
@@ -781,10 +902,6 @@ function () {
 
       if (this._config.extraModeEnabled) {
         //TODO
-        this._clusterIcon.setCenter(this._center);
-
-        this._clusterIcon.show();
-
         return;
       }
 

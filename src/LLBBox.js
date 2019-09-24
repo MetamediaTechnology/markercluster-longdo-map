@@ -18,6 +18,18 @@ export default class{
                 'maxLon':this._bounds.maxLon,
                 'maxLat':this._bounds.maxLat};
     }
+    LT(){
+        return {"lon": this._bounds.minLon, "lat": this._bounds.maxLat};
+    }
+    RT(){
+        return {"lon": this._bounds.maxLon, "lat": this._bounds.maxLat}; 
+    }
+    LB(){
+        return {"lon": this._bounds.minLon, "lat": this._bounds.minLat};
+    }
+    RB(){
+        return {"lon": this._bounds.maxLon, "lat": this._bounds.minLat};
+    }
     getMinimumBounds(){
         const b = longdo.Util.locationBound(this._originalLocationList);
         return b;
@@ -80,6 +92,18 @@ export default class{
         {"lon":this._bounds.minLon,"lat":this._bounds.maxLat},
         {"lon":this._bounds.maxLon,"lat":this._bounds.maxLat},
         {"lon":this._bounds.maxLon,"lat":this._bounds.minLat}];
+    }
+
+    getNxNGridCord(loc,n){
+        if(!this.isLocInBounds(loc)){
+            return null;
+        }
+        const xlen = (this._bounds.maxLon - this._bounds.minLon) / n;
+        const ylen = (this._lat2y(this._bounds.maxLat) - this._lat2y(this._bounds.minLat)) / n;
+        let lonoffset = loc.lon - this._bounds.minLon;
+        const yoffset = -this._lat2y(loc.lat) + this._lat2y(this._bounds.maxLat);
+        const xid = Math.floor(lonoffset / xlen), yid = Math.floor(yoffset / ylen);
+        return {"u": xid,"v": yid};
     }
 
     /*

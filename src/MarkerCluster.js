@@ -85,6 +85,15 @@ export default class MarkerCluster{
             const m = markers[len];
             this._markers.push(m);
         }
+        this.shuffle();
+    }
+    shuffle(){
+        for(let i = this._markers.length-1;i > 0; i--){
+            const r = Math.floor(Math.random()*(i+1));
+            const temp = this._markers[i];
+            this._markers[i] = this._markers[r];
+            this._markers[r] = temp;
+        }
     }
     render(){
         this._ready = true;
@@ -100,7 +109,12 @@ export default class MarkerCluster{
             const m = this._markers[len];
             const loc = m.location();
             if(!m.isAdded && bounds.isLocInBounds(loc)){
-                this._addToClosestCluster(m);
+                if(!this.config.extraModeEnabled){
+                    this._addToClosestCluster(m);
+                }else{
+                    this._addToTiledCluster(m);
+                }
+                
             }
         }
     }
@@ -126,6 +140,29 @@ export default class MarkerCluster{
             cluster.addMarker(marker);
             this._clusters.push(cluster);
         }
+    }
+
+    _addToTiledCluster(marker){
+        const that = this;
+        const locationToTile = function(loc){
+            const point = longdo.Util.locationToPoint(longdo.Projections.EPSG3857,loc);
+            point.z = 20-that._map.zoom();
+            return longdo.Util.pointToTile(point);
+        };
+        const tile = locationToTile(marker.location());
+        let len = this._clusters.length;
+        while(len--){
+            const cluster = this._clusters[len];
+            if(cluster.u === tile.u && cluster.v === tile.v){
+                cluster.addMarker(marker,tile);
+                return;
+            }
+        }
+        const cluster = new Cluster(this,this.config,this._iloader);
+        cluster.u = tile.u;
+        cluster.v = tile.v;
+        cluster.addMarker(marker,tile);
+        this._clusters.push(cluster);
     }
 
     _removeMarker(marker){
@@ -219,7 +256,7 @@ export class Cluster{
         this._clusterIcon = new ClusterIcon(this,this._config,iloader);
     }
 
-    addMarker(marker){
+    addMarker(marker,tile){
         if(this._markers.indexOf(marker) !== -1){
             return false;
         }
@@ -237,11 +274,33 @@ export class Cluster{
 
         if(this._config.extraModeEnabled){
             //TODO
-            let len = this._markers.length;
-            while(len--){
-                if(!marker.active()){
-                    this._map.Overlays.add(marker);
+            if(!this._gridids){
+                this._gridids = [];
+            }
+            this._gridids.push(new LLBBox().generateFrom(
+                longdo.Util.boundOfTile(longdo.Projections.EPSG3857,tile)
+            ).getNxNGridCord(marker.location(),4));
+
+            
+            if(!this._markersToShow){
+                this._markersToShow = [marker];
+            }else if(this._markersToShow.length <= 64){
+                let markersInSameGrid = 0;
+                const that = this;
+                this._gridids.forEach(function(value){
+                    const gridid = that._gridids[that._gridids.length-1];
+                    markersInSameGrid += gridid.u === value.u && gridid.v === value.v ? 1 : 0;
+                });
+
+                if(markersInSameGrid % 8 !== 0){
+                    return true;
                 }
+                this._markersToShow.push(marker);
+            }else{
+                return true;
+            }
+            if(!marker.active()){
+                this._map.Overlays.add(marker);
             }
             this.updateIcon();
             return true;
@@ -300,8 +359,6 @@ export class Cluster{
 
         if(this._config.extraModeEnabled){
             //TODO
-            this._clusterIcon.setCenter(this._center);
-            this._clusterIcon.show();
             return;
         }
 
