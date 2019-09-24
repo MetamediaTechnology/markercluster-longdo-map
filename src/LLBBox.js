@@ -21,7 +21,7 @@ export class LLBBox{
         }
         return new LLBBox([loc1,loc2]);
     }
-    
+
     getBounds(){
         return {'minLon':this._bounds.minLon,
                 'minLat':this._bounds.minLat,
@@ -83,6 +83,17 @@ export class LLBBox{
         {"lon":this._bounds.maxLon,"lat":this._bounds.minLat}];
     }
 
+    drawArea(map){
+        this._poly = new longdo.Polygon(this.getRectVertex());
+        map.Overlays.add(this._poly);
+    }
+    removeArea(map){
+        if(this._poly && this._poly.active()){
+            map.Overlays.remove(this._poly);
+            delete this._poly;
+        }
+    }
+
     getNxNGridCord(loc,n){
         if(!this.isLocInBounds(loc)){
             return null;
@@ -100,5 +111,11 @@ export class LLBBox{
     */
     _y2lat(y) { return (Math.atan(Math.exp(y / (180 / Math.PI))) / (Math.PI / 4) - 1) * 90; }
     _lat2y(lat) { return Math.log(Math.tan((lat / 90 + 1) * (Math.PI / 4) )) * (180 / Math.PI); }
+}
 
+export class LLCircle{
+    constructor(center,radius){
+        this.center = center;
+        this.sqrad = radius * radius;
+    }
 }

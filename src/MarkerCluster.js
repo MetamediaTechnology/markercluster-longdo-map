@@ -87,7 +87,9 @@ export default class MarkerCluster{
             const m = markers[len];
             this._markers.push(m);
         }
-        this.shuffle();
+        if(this.config.swarmModeEnabled && this.config.swarmAlg === 2){
+            this.shuffle();
+        }
     }
     shuffle(){
         for(let i = this._markers.length-1;i > 0; i--){
@@ -114,7 +116,11 @@ export default class MarkerCluster{
                 if(!this.config.swarmModeEnabled){
                     this._addToClosestCluster(m);
                 }else{
-                    this._addToTiledCluster(m);
+                    if(this.config.swarmAlg === 2){
+                        this._addToClosestCluster(m);
+                    }else{
+                        this._addToTiledCluster(m);
+                    }
                 }
                 
             }

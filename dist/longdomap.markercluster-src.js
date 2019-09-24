@@ -145,7 +145,7 @@ function () {
 
       this._markers.push(marker);
 
-      if (this._config.swarmModeEnabled) {
+      if (this._config.swarmModeEnabled && this._config.swarmAlg === 1) {
         //TODO
         if (!this._gridids) {
           this._gridids = [];
@@ -175,6 +175,15 @@ function () {
 
         if (!marker.active()) {
           this._map.Overlays.add(marker);
+        }
+
+        this.updateIcon();
+        return true;
+      } else if (this._config.swarmModeEnabled && this._config.swarmAlg === 2) {
+        if (this._markers.length % 10 === 1) {
+          if (!marker.active()) {
+            this._map.Overlays.add(marker);
+          }
         }
 
         this.updateIcon();
@@ -223,6 +232,8 @@ function () {
 
       this._markers.length = 0;
       delete this._markers;
+
+      this._bounds.removeArea(this._map);
     }
   }, {
     key: "_calculateBounds",
@@ -232,6 +243,10 @@ function () {
   }, {
     key: "updateIcon",
     value: function updateIcon() {
+      if (this._config.drawMarkerArea) {
+        this._bounds.drawArea(this._map);
+      }
+
       var zoom = this._map.zoom();
 
       var mz = this._config.maxZoom;
@@ -314,6 +329,7 @@ var _default = function _default(options) {
   this.maxZoom = options.maxZoom || null;
   this.minClusterSize = options.minClusterSize || 2;
   this.gridSize = options.gridSize || 120;
+  this.clusterRadius = options.clusterRadius || this.gridSize;
   this.averageCenter = options.averageCenter;
   this.drawMarkerArea = options.drawMarkerArea;
   this.swarmModeEnabled = options.swarmModeEnabled;
@@ -620,12 +636,13 @@ function () {
 /*!***********************!*\
   !*** ./src/LLBBox.js ***!
   \***********************/
-/*! exports provided: LLBBox */
+/*! exports provided: LLBBox, LLCircle */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LLBBox", function() { return LLBBox; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LLCircle", function() { return LLCircle; });
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -780,6 +797,20 @@ function () {
       }];
     }
   }, {
+    key: "drawArea",
+    value: function drawArea(map) {
+      this._poly = new longdo.Polygon(this.getRectVertex());
+      map.Overlays.add(this._poly);
+    }
+  }, {
+    key: "removeArea",
+    value: function removeArea(map) {
+      if (this._poly && this._poly.active()) {
+        map.Overlays.remove(this._poly);
+        delete this._poly;
+      }
+    }
+  }, {
     key: "getNxNGridCord",
     value: function getNxNGridCord(loc, n) {
       if (!this.isLocInBounds(loc)) {
@@ -837,6 +868,12 @@ function () {
 
   return LLBBox;
 }();
+var LLCircle = function LLCircle(center, radius) {
+  _classCallCheck(this, LLCircle);
+
+  this.center = center;
+  this.sqrad = radius * radius;
+};
 
 /***/ }),
 
@@ -992,7 +1029,9 @@ function () {
         this._markers.push(m);
       }
 
-      this.shuffle();
+      if (this.config.swarmModeEnabled && this.config.swarmAlg === 2) {
+        this.shuffle();
+      }
     }
   }, {
     key: "shuffle",
@@ -1031,7 +1070,11 @@ function () {
           if (!this.config.swarmModeEnabled) {
             this._addToClosestCluster(m);
           } else {
-            this._addToTiledCluster(m);
+            if (this.config.swarmAlg === 2) {
+              this._addToClosestCluster(m);
+            } else {
+              this._addToTiledCluster(m);
+            }
           }
         }
       }

@@ -30,7 +30,7 @@ export default class{
         marker.isAdded = true;
         this._markers.push(marker);
 
-        if(this._config.swarmModeEnabled){
+        if(this._config.swarmModeEnabled && this._config.swarmAlg === 1){
             //TODO
             if(!this._gridids){
                 this._gridids = [];
@@ -59,6 +59,14 @@ export default class{
             }
             if(!marker.active()){
                 this._map.Overlays.add(marker);
+            }
+            this.updateIcon();
+            return true;
+        }else if(this._config.swarmModeEnabled && this._config.swarmAlg === 2){
+            if(this._markers.length % 10 === 1){
+                if(!marker.active()){
+                    this._map.Overlays.add(marker);
+                }
             }
             this.updateIcon();
             return true;
@@ -95,12 +103,16 @@ export default class{
         this._clusterIcon.remove();
         this._markers.length = 0;
         delete this._markers;
+        this._bounds.removeArea(this._map);
     }
 
     _calculateBounds(){
         this._bounds = LLBBox.generateRect(this._center).extendSize(this._config.gridSize*Math.pow(2,-this._map.zoom()));     
     }
     updateIcon(){
+        if(this._config.drawMarkerArea){
+            this._bounds.drawArea(this._map);
+        }
         const zoom = this._map.zoom();
         const mz = this._config.maxZoom;
         if(mz && zoom > mz || zoom === 20){
@@ -115,7 +127,6 @@ export default class{
         }
 
         if(this._config.swarmModeEnabled){
-
             //TODO
             return;
         }
