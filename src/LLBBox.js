@@ -1,17 +1,27 @@
 const longdo = window.longdo;
-export default class{
-    constructor(){
-        let locations = arguments.length === 0 ? [] :
-                        arguments.length === 1 ? 
-                            (arguments[0] instanceof Array ? arguments[0] : [arguments[0]]) :
-                        arguments[0] instanceof Array ? arguments[0] : [arguments[0]];
-        this._projection = arguments.length <= 1 ? longdo.Projections.EPSG3857 : arguments[1];
-        this._locationList = locations instanceof Array ? locations : [locations];
+export class LLBBox{
+    constructor(locations){
+        this._projection = longdo.Projections.EPSG3857;
+        this._locationList = locations.slice();
         this._originalLocationList = this._locationList.slice();
         if(locations.length > 0){
             this._bounds = longdo.Util.locationBound(this._locationList);
         }
     }
+
+    static generateFrom(bound){
+        return new LLBBox(
+            [
+                {"lon":bound.minLon,"lat":bound.minLat},
+                {'lon':bound.maxLon,'lat':bound.maxLat}]);
+    }
+    static generateRect(loc1,loc2){
+        if(!loc2){
+            loc2 = loc1;
+        }
+        return new LLBBox([loc1,loc2]);
+    }
+    
     getBounds(){
         return {'minLon':this._bounds.minLon,
                 'minLat':this._bounds.minLat,
@@ -48,27 +58,6 @@ export default class{
 
     empty(){return this._locationList.length === 0;}
 
-    generateFrom(bound){
-        this._locationList.length = 0;
-        this.add({"lon":bound.minLon,"lat":bound.minLat});
-        this.add({"lon":bound.maxLon,"lat":bound.minLat});
-        this.add({"lon":bound.minLon,"lat":bound.maxLat});
-        this.add({'lon':bound.maxLon,'lat':bound.maxLat});
-        this._bounds = longdo.Util.locationBound(this._locationList);
-        return this;
-    }
-    generateRect(loc1,loc2){
-        if(!loc2){
-            loc2 = loc1;
-        }
-        this._locationList.length = 0;
-        this.add({"lon":loc1.lon,"lat":loc1.lat});
-        this.add({"lon":loc1.lon,"lat":loc2.lat});
-        this.add({"lon":loc2.lon,"lat":loc1.lat});
-        this.add({"lon":loc2.lon,"lat":loc2.lat});
-        this._bounds = longdo.Util.locationBound(this._locationList);
-        return this;
-    }
     getLocations(){
         return this._locationList.slice();
     }

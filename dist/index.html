@@ -29,32 +29,6 @@
 	var markercluster;
 	var img;
 	var markers = [];
-	var styles = [{
-		url: "./m4.png",
-		width: 77,
-		height: 77,
-		minThreshold: 60
-	},{
-		url: "./m5.png",
-		width: 89,
-		height: 89,
-		minThreshold:100
-	},{
-		url: "./m2.png",
-		width: 55,
-		height: 55,
-		minThreshold:10
-	},{
-		url: "./m3.png",
-		width: 65,
-		height: 65,
-		minThreshold:30
-	},{
-		url: "./m1.png",
-		width: 52,
-		height: 52,
-		minThreshold:0
-	}];
 	function init() {
 		map = new longdo.Map({
 			placeholder: document.getElementById('map'),
@@ -63,7 +37,6 @@
 		markercluster = new lmc.MarkerCluster(map,
 		{
 			minClusterSize:2,
-			styles:styles,
 			swarmModeEnabled: true,
 			swarmAlg: 1
 		});

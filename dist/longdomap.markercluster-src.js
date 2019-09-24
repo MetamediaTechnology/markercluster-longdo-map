@@ -145,13 +145,13 @@ function () {
 
       this._markers.push(marker);
 
-      if (this._config.extraModeEnabled) {
+      if (this._config.swarmModeEnabled) {
         //TODO
         if (!this._gridids) {
           this._gridids = [];
         }
 
-        this._gridids.push(new _LLBBox__WEBPACK_IMPORTED_MODULE_1__["default"]().generateFrom(longdo.Util.boundOfTile(longdo.Projections.EPSG3857, tile)).getNxNGridCord(marker.location(), 4));
+        this._gridids.push(_LLBBox__WEBPACK_IMPORTED_MODULE_1__["LLBBox"].generateFrom(longdo.Util.boundOfTile(longdo.Projections.EPSG3857, tile)).getNxNGridCord(marker.location(), 4));
 
         if (!this._markersToShow) {
           this._markersToShow = [marker];
@@ -227,7 +227,7 @@ function () {
   }, {
     key: "_calculateBounds",
     value: function _calculateBounds() {
-      this._bounds = this._markerCluster.getExtendedBounds(new _LLBBox__WEBPACK_IMPORTED_MODULE_1__["default"]().generateRect(this._center));
+      this._bounds = _LLBBox__WEBPACK_IMPORTED_MODULE_1__["LLBBox"].generateRect(this._center).extendSize(this._config.gridSize * Math.pow(2, -this._map.zoom()));
     }
   }, {
     key: "updateIcon",
@@ -250,7 +250,7 @@ function () {
         return;
       }
 
-      if (this._config.extraModeEnabled) {
+      if (this._config.swarmModeEnabled) {
         //TODO
         return;
       }
@@ -316,7 +316,8 @@ var _default = function _default(options) {
   this.gridSize = options.gridSize || 120;
   this.averageCenter = options.averageCenter;
   this.drawMarkerArea = options.drawMarkerArea;
-  this.extraModeEnabled = options.extraModeEnabled;
+  this.swarmModeEnabled = options.swarmModeEnabled;
+  this.swarmAlg = options.swarmAlg ? parseInt(options.swarmAlg, 10) : null;
   this.styles = options.styles || null;
 };
 
@@ -375,7 +376,7 @@ function () {
   _createClass(ClusterIcon, [{
     key: "show",
     value: function show() {
-      if (!this._config.extraModeEnabled) {
+      if (!this._config.swarmModeEnabled) {
         var pos = this._center;
 
         if (this._clusterMarker.active()) {
@@ -619,12 +620,12 @@ function () {
 /*!***********************!*\
   !*** ./src/LLBBox.js ***!
   \***********************/
-/*! exports provided: default */
+/*! exports provided: LLBBox */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return _default; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LLBBox", function() { return LLBBox; });
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -632,16 +633,14 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var longdo = window.longdo;
-
-var _default =
+var LLBBox =
 /*#__PURE__*/
 function () {
-  function _default() {
-    _classCallCheck(this, _default);
+  function LLBBox(locations) {
+    _classCallCheck(this, LLBBox);
 
-    var locations = arguments.length === 0 ? [] : arguments.length === 1 ? arguments[0] instanceof Array ? arguments[0] : [arguments[0]] : arguments[0] instanceof Array ? arguments[0] : [arguments[0]];
-    this._projection = arguments.length <= 1 ? longdo.Projections.EPSG3857 : arguments[1];
-    this._locationList = locations instanceof Array ? locations : [locations];
+    this._projection = longdo.Projections.EPSG3857;
+    this._locationList = locations.slice();
     this._originalLocationList = this._locationList.slice();
 
     if (locations.length > 0) {
@@ -649,7 +648,7 @@ function () {
     }
   }
 
-  _createClass(_default, [{
+  _createClass(LLBBox, [{
     key: "getBounds",
     value: function getBounds() {
       return {
@@ -721,56 +720,6 @@ function () {
     key: "empty",
     value: function empty() {
       return this._locationList.length === 0;
-    }
-  }, {
-    key: "generateFrom",
-    value: function generateFrom(bound) {
-      this._locationList.length = 0;
-      this.add({
-        "lon": bound.minLon,
-        "lat": bound.minLat
-      });
-      this.add({
-        "lon": bound.maxLon,
-        "lat": bound.minLat
-      });
-      this.add({
-        "lon": bound.minLon,
-        "lat": bound.maxLat
-      });
-      this.add({
-        'lon': bound.maxLon,
-        'lat': bound.maxLat
-      });
-      this._bounds = longdo.Util.locationBound(this._locationList);
-      return this;
-    }
-  }, {
-    key: "generateRect",
-    value: function generateRect(loc1, loc2) {
-      if (!loc2) {
-        loc2 = loc1;
-      }
-
-      this._locationList.length = 0;
-      this.add({
-        "lon": loc1.lon,
-        "lat": loc1.lat
-      });
-      this.add({
-        "lon": loc1.lon,
-        "lat": loc2.lat
-      });
-      this.add({
-        "lon": loc2.lon,
-        "lat": loc1.lat
-      });
-      this.add({
-        "lon": loc2.lon,
-        "lat": loc2.lat
-      });
-      this._bounds = longdo.Util.locationBound(this._locationList);
-      return this;
     }
   }, {
     key: "getLocations",
@@ -864,12 +813,30 @@ function () {
     value: function _lat2y(lat) {
       return Math.log(Math.tan((lat / 90 + 1) * (Math.PI / 4))) * (180 / Math.PI);
     }
+  }], [{
+    key: "generateFrom",
+    value: function generateFrom(bound) {
+      return new LLBBox([{
+        "lon": bound.minLon,
+        "lat": bound.minLat
+      }, {
+        'lon': bound.maxLon,
+        'lat': bound.maxLat
+      }]);
+    }
+  }, {
+    key: "generateRect",
+    value: function generateRect(loc1, loc2) {
+      if (!loc2) {
+        loc2 = loc1;
+      }
+
+      return new LLBBox([loc1, loc2]);
+    }
   }]);
 
-  return _default;
+  return LLBBox;
 }();
-
-
 
 /***/ }),
 
@@ -971,17 +938,12 @@ function () {
      }
     });
     */
+    //    this._map.Event.bind('loadTile',function(str) {
+    //         if(str !== 'finish' && !that._ready && !that._iloader.ready){return;}
+    //         that.resetViewport();
+    //         that._createClusters();
+    //     });
 
-
-    this._map.Event.bind('loadTile', function (str) {
-      if (str !== 'finish' && !that._ready && !that._iloader.ready) {
-        return;
-      }
-
-      that.resetViewport();
-
-      that._createClusters();
-    });
 
     this._map.Event.bind('overlayClick', function (overlay) {
       if (!that._ready) {
@@ -1057,8 +1019,8 @@ function () {
         return;
       }
 
-      var mapBounds = new _LLBBox__WEBPACK_IMPORTED_MODULE_0__["default"]().generateFrom(this._map.bound());
-      var bounds = this.getExtendedBounds(mapBounds);
+      var mapBounds = _LLBBox__WEBPACK_IMPORTED_MODULE_0__["LLBBox"].generateFrom(this._map.bound());
+      var bounds = mapBounds.extendSize(this.config.gridSize * Math.pow(2, -this._map.zoom()));
       var len = this._markers.length;
 
       while (len--) {
@@ -1066,7 +1028,7 @@ function () {
         var loc = m.location();
 
         if (!m.isAdded && bounds.isLocInBounds(loc)) {
-          if (!this.config.extraModeEnabled) {
+          if (!this.config.swarmModeEnabled) {
             this._addToClosestCluster(m);
           } else {
             this._addToTiledCluster(m);
@@ -1188,12 +1150,6 @@ function () {
       }
 
       return false;
-    }
-  }, {
-    key: "getExtendedBounds",
-    value: function getExtendedBounds(bounds) {
-      bounds.extendSize(this.config.gridSize * Math.pow(2, -this._map.zoom()));
-      return bounds;
     }
   }, {
     key: "clearMarkers",

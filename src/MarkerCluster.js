@@ -2,7 +2,7 @@ if(typeof window.longdo === 'undefined'){
     throw new Error('longdo API must be loaded before the longdomap markercluster plugin');
 }
 const longdo = window.longdo;
-import LLBBox from "./LLBBox";
+import {LLBBox} from "./LLBBox";
 import Config from "./ConfigHandler";
 import {IconLoader} from './Icon';
 import Cluster from './Cluster';
@@ -104,8 +104,8 @@ export default class MarkerCluster{
     }
     _createClusters(){
         if(!this._ready){return;}
-        const mapBounds = new LLBBox().generateFrom(this._map.bound());
-        const bounds = this.getExtendedBounds(mapBounds);
+        const mapBounds = LLBBox.generateFrom(this._map.bound());
+        const bounds = mapBounds.extendSize(this.config.gridSize*Math.pow(2,-this._map.zoom()));
         let len = this._markers.length;
         while(len--){
             const m = this._markers[len];
@@ -201,11 +201,6 @@ export default class MarkerCluster{
             return true;
         }
         return false;
-    }
-
-    getExtendedBounds(bounds){
-        bounds.extendSize(this.config.gridSize*Math.pow(2,-this._map.zoom()));
-        return bounds;
     }
 
     clearMarkers(){

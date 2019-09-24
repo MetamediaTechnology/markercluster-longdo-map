@@ -1,5 +1,5 @@
 import {ClusterIcon} from './Icon';
-import LLBBox from './LLBBox';
+import {LLBBox} from './LLBBox';
 const longdo = window.longdo;
 export default class{
     
@@ -35,7 +35,7 @@ export default class{
             if(!this._gridids){
                 this._gridids = [];
             }
-            this._gridids.push(new LLBBox().generateFrom(
+            this._gridids.push(LLBBox.generateFrom(
                 longdo.Util.boundOfTile(longdo.Projections.EPSG3857,tile)
             ).getNxNGridCord(marker.location(),4));
 
@@ -98,8 +98,7 @@ export default class{
     }
 
     _calculateBounds(){
-        this._bounds = 
-        this._markerCluster.getExtendedBounds(new LLBBox().generateRect(this._center));
+        this._bounds = LLBBox.generateRect(this._center).extendSize(this._config.gridSize*Math.pow(2,-this._map.zoom()));     
     }
     updateIcon(){
         const zoom = this._map.zoom();
@@ -116,7 +115,7 @@ export default class{
         }
 
         if(this._config.swarmModeEnabled){
-            
+
             //TODO
             return;
         }

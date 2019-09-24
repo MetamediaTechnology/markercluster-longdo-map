@@ -6,7 +6,7 @@ export default class {
         this.averageCenter = options.averageCenter;
         this.drawMarkerArea = options.drawMarkerArea;
         this.swarmModeEnabled = options.swarmModeEnabled;
-        this.swarmAlg = options.swarmAlg;
+        this.swarmAlg = options.swarmAlg ? parseInt(options.swarmAlg,10) : null;
         this.styles = options.styles || null;
     }
 }
