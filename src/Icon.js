@@ -17,6 +17,7 @@ export class ClusterIcon{
     show(){
         if(!this._config.swarmModeEnabled){
             const pos = this._center;
+            this._clusterMarker.move({"lat":pos.lat,"lon":pos.lon});
             if(this._cluster._markers.length < this._config.minClusterSize){
                 this.hide();
                 return;
@@ -30,7 +31,7 @@ export class ClusterIcon{
                     this._map.Overlays.remove(this._poly);
                 }
                 if(this._config.drawMarkerArea){
-                    this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{});
+                    this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{"fillColor": "rgba(0,0,0,0.3)"});
                     this._map.Overlays.add(this._poly);
                 }
             }
@@ -49,7 +50,7 @@ export class ClusterIcon{
         this._visible = false;
         if(this._config.drawMarkerArea){
             if(!this._poly){
-                this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{});
+                this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{"fillColor": "rgba(0,0,0,0.3)"});
             }
             if(!this._poly.active()){
                 this._map.Overlays.add(this._poly);

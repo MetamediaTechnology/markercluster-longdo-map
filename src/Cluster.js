@@ -18,6 +18,7 @@ export default class{
         // if(this._markers.indexOf(marker) !== -1){
         //     return false;
         // }
+
         if(!this._center){
             this._center = marker.location();
             this._calculateBounds();
@@ -143,7 +144,7 @@ export default class{
         //     return;
         // }
         // const sums = this._markers.length;
-        this._clusterIcon.setCenter(this._center);
+        // this._clusterIcon.setCenter(this._center);
         // this._clusterIcon.setSums(sums);
         // this._clusterIcon.show();
     }
@@ -162,6 +163,7 @@ export default class{
     }
     finalize(){
         this._clusterIcon.setSums(this._markers.length);
+        this._clusterIcon.setCenter(this._center);
         this._clusterIcon.show();
     }
 }

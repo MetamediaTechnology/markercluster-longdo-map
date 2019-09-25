@@ -276,9 +276,8 @@ function () {
       //     return;
       // }
       // const sums = this._markers.length;
-
-
-      this._clusterIcon.setCenter(this._center); // this._clusterIcon.setSums(sums);
+      // this._clusterIcon.setCenter(this._center);
+      // this._clusterIcon.setSums(sums);
       // this._clusterIcon.show();
 
     }
@@ -304,6 +303,8 @@ function () {
     key: "finalize",
     value: function finalize() {
       this._clusterIcon.setSums(this._markers.length);
+
+      this._clusterIcon.setCenter(this._center);
 
       this._clusterIcon.show();
     }
@@ -400,6 +401,11 @@ function () {
       if (!this._config.swarmModeEnabled) {
         var pos = this._center;
 
+        this._clusterMarker.move({
+          "lat": pos.lat,
+          "lon": pos.lon
+        });
+
         if (this._cluster._markers.length < this._config.minClusterSize) {
           this.hide();
           return;
@@ -417,7 +423,9 @@ function () {
           }
 
           if (this._config.drawMarkerArea) {
-            this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {});
+            this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {
+              "fillColor": "rgba(0,0,0,0.3)"
+            });
 
             this._map.Overlays.add(this._poly);
           }
@@ -446,7 +454,9 @@ function () {
 
       if (this._config.drawMarkerArea) {
         if (!this._poly) {
-          this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {});
+          this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {
+            "fillColor": "rgba(0,0,0,0.3)"
+          });
         }
 
         if (!this._poly.active()) {
