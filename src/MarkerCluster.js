@@ -101,8 +101,10 @@ export default class MarkerCluster{
     }
     render(){
         this._ready = true;
-        this.resetViewport();
-        this._createClusters();
+        if(this._iloader.ready){
+            this.resetViewport();
+            this._createClusters();
+        }
     }
     _createClusters(){
         if(!this._ready){return;}
@@ -124,6 +126,11 @@ export default class MarkerCluster{
                 }
                 
             }
+        }
+        len = this._clusters.length;
+        while(len--){
+            const cl = this._clusters[len];
+            cl.finalize();
         }
     }
     _addToClosestCluster(marker){

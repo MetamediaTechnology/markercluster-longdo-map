@@ -17,6 +17,10 @@ export class ClusterIcon{
     show(){
         if(!this._config.swarmModeEnabled){
             const pos = this._center;
+            if(this._cluster._markers.length < this._config.minClusterSize){
+                this.hide();
+                return;
+            }
             if(this._clusterMarker.active()){
                 this._map.Overlays.move(this._clusterMarker,pos);
             }else{
@@ -54,9 +58,9 @@ export class ClusterIcon{
     }
     setCenter(center){
         this._center = center;
-        if(this._clusterMarker){
-            this._clusterMarker.move({"lat":center.lat,"lon":center.lon});
-        }
+        // if(this._clusterMarker){
+        //     this._clusterMarker.move({"lat":center.lat,"lon":center.lon});
+        // }
     }
     setSums(sums){
         if(this._sums && sums === this._sums){return;}
@@ -119,7 +123,7 @@ export class IconLoader{
             elm.style.marginLeft = '-20px';
             elm.style.marginTop = '-20px';
             elm.style.overflow = 'hidden';
-            elm.className += ' marker-cluster marker-cluster-small leaflet-marker-icon';
+            elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
             result.html = elm.outerHTML;
             result.size = {"width":40,"height":40};
         }else{
@@ -142,16 +146,12 @@ export class IconLoader{
     changeNumber(element,num){
         if(this.useDefault){
             element.children[0].children[0].children[0].innerText = `${num}`;
-            const list = element.children[0].classList;
-            list.remove('marker-cluster-large');
-            list.remove('marker-cluster-medium');
-            list.remove('marker-cluster-small');
             if(num < 10){
-                list.add('marker-cluster-small');
+                element.children[0].className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
             }else if(num < 100){
-                list.add('marker-cluster-medium');
+                element.children[0].className = 'marker-cluster marker-cluster-medium leaflet-marker-icon';
             }else{
-                list.add('marker-cluster-large');
+                element.children[0].className = 'marker-cluster marker-cluster-large leaflet-marker-icon';
             }
         }else{
             element.children[0].innerText = `${num}`;

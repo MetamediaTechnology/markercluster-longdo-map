@@ -38,7 +38,7 @@
 		{
 			minClusterSize:2,
 			drawMarkerArea: false,
-			swarmModeEnabled: true,
+			swarmModeEnabled: false,
 			swarmAlg: 2
 		});
 		img = new Image();
@@ -86,37 +86,37 @@
 			// 	}));
 			// }
 
-			// var limit = 150, loc = map.location();
-			// while(limit--){
-			// 	var lat = 13.755146+Math.random()-0.5, lon = 100.549577+Math.random()-0.5;
-			// 	markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
-			// 		icon:{
-			// 				url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
-			// 				offset: { x: 12, y: 45 },
-			// 				size: {width: 24, height: 45}
-			// 			}
-			// 	}));
-			// 	// map.Overlays.add(new longdo.Marker({lat:lat,lon:lon}));
-			// }
-			// markercluster.render();
-
-			$.get('./FamilyRestaurant.csv',function(data){
-				var csv = $.csv.toArrays(data);
-				$(csv).each(function(){
-					if(this.length > 0){
-						var lat = parseFloat(this[1]);
-						var lon = parseFloat(this[0]);
-						markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
-							icon:{
-									url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
-									offset: { x: 12, y: 45 },
-									size: {width: 24, height: 45}
-								}
-						}));
-					}
-				})
-			},'text');
+			var limit = 65000, loc = map.location();
+			while(limit--){
+				var lat = 13.755146+Math.random()-0.5, lon = 100.549577+Math.random()-0.5;
+				markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
+					icon:{
+							url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
+							offset: { x: 12, y: 45 },
+							size: {width: 24, height: 45}
+						}
+				}));
+				// map.Overlays.add(new longdo.Marker({lat:lat,lon:lon}));
+			}
 			markercluster.render();
+
+			// $.get('./FamilyRestaurant.csv',function(data){
+			// 	var csv = $.csv.toArrays(data);
+			// 	$(csv).each(function(){
+			// 		if(this.length > 0){
+			// 			var lat = parseFloat(this[1]);
+			// 			var lon = parseFloat(this[0]);
+			// 			markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
+			// 				icon:{
+			// 						url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
+			// 						offset: { x: 12, y: 45 },
+			// 						size: {width: 24, height: 45}
+			// 					}
+			// 			}));
+			// 		}
+			// 	})
+			// },'text');
+			// markercluster.render();
 			// map.Layers.add(new longdo.Layer('test',{type:longdo.LayerType.Custom, url: function (projection,tile,zoom){
 	  		// return 'https://usermap.longdo.com/klong/gadget/tile.php?x='+tile.u+'&y='+tile.v+'&z='+zoom;}}));
 		};

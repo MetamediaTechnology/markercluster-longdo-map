@@ -127,10 +127,9 @@ function () {
   _createClass(_default, [{
     key: "addMarker",
     value: function addMarker(marker, tile) {
-      if (this._markers.indexOf(marker) !== -1) {
-        return false;
-      }
-
+      // if(this._markers.indexOf(marker) !== -1){
+      //     return false;
+      // }
       if (!this._center) {
         this._center = marker.location();
 
@@ -180,7 +179,7 @@ function () {
         this.updateIcon();
         return true;
       } else if (this._config.swarmModeEnabled && this._config.swarmAlg === 2) {
-        if (this._markers.length % 10 === 1) {
+        if (this._markers.length < 11 || this._markers.length % 10 === 0) {
           if (!marker.active()) {
             this._map.Overlays.add(marker);
           }
@@ -199,28 +198,32 @@ function () {
       }
 
       if (len === this._config.minClusterSize) {
-        var lenc = len;
+        var i = this._config.minClusterSize;
 
-        while (lenc--) {
-          var m = this._markers[lenc];
+        while (i--) {
+          var m = this._markers[i];
 
-          if (m.active()) {
-            this._map.Overlays.remove(m);
-          }
+          this._map.Overlays.remove(m);
         }
-      }
+      } // if(len === this._config.minClusterSize){
+      //     let lenc = len;
+      //     while(lenc--){
+      //         const m = this._markers[lenc];
+      //         if(m.active()){
+      //             this._map.Overlays.remove(m);
+      //         }
+      //     }
+      // }
+      // if(len >= this._config.minClusterSize){
+      //     let lenc = len;
+      //     while(lenc--){
+      //         const m = this._markers[lenc];
+      //         if(m.active()){
+      //             this._map.Overlays.remove(m);
+      //         }
+      //     }
+      // }
 
-      if (len >= this._config.minClusterSize) {
-        var _lenc = len;
-
-        while (_lenc--) {
-          var _m = this._markers[_lenc];
-
-          if (_m.active()) {
-            this._map.Overlays.remove(_m);
-          }
-        }
-      }
 
       this.updateIcon();
       return true;
@@ -268,21 +271,16 @@ function () {
       if (this._config.swarmModeEnabled) {
         //TODO
         return;
-      }
+      } // if(this._markers.length < this._config.minClusterSize){
+      //     this._clusterIcon.hide();
+      //     return;
+      // }
+      // const sums = this._markers.length;
 
-      if (this._markers.length < this._config.minClusterSize) {
-        this._clusterIcon.hide();
 
-        return;
-      }
+      this._clusterIcon.setCenter(this._center); // this._clusterIcon.setSums(sums);
+      // this._clusterIcon.show();
 
-      var sums = this._markers.length;
-
-      this._clusterIcon.setCenter(this._center);
-
-      this._clusterIcon.setSums(sums);
-
-      this._clusterIcon.show();
     }
   }, {
     key: "isMarkerInClusterBounds",
@@ -301,6 +299,13 @@ function () {
       }
 
       return false;
+    }
+  }, {
+    key: "finalize",
+    value: function finalize() {
+      this._clusterIcon.setSums(this._markers.length);
+
+      this._clusterIcon.show();
     }
   }]);
 
@@ -395,6 +400,11 @@ function () {
       if (!this._config.swarmModeEnabled) {
         var pos = this._center;
 
+        if (this._cluster._markers.length < this._config.minClusterSize) {
+          this.hide();
+          return;
+        }
+
         if (this._clusterMarker.active()) {
           this._map.Overlays.move(this._clusterMarker, pos);
         } else {
@@ -447,14 +457,9 @@ function () {
   }, {
     key: "setCenter",
     value: function setCenter(center) {
-      this._center = center;
-
-      if (this._clusterMarker) {
-        this._clusterMarker.move({
-          "lat": center.lat,
-          "lon": center.lon
-        });
-      }
+      this._center = center; // if(this._clusterMarker){
+      //     this._clusterMarker.move({"lat":center.lat,"lon":center.lon});
+      // }
     }
   }, {
     key: "setSums",
@@ -555,7 +560,7 @@ function () {
         elm.style.marginLeft = '-20px';
         elm.style.marginTop = '-20px';
         elm.style.overflow = 'hidden';
-        elm.className += ' marker-cluster marker-cluster-small leaflet-marker-icon';
+        elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
         result.html = elm.outerHTML;
         result.size = {
           "width": 40,
@@ -589,27 +594,23 @@ function () {
     value: function changeNumber(element, num) {
       if (this.useDefault) {
         element.children[0].children[0].children[0].innerText = "".concat(num);
-        var list = element.children[0].classList;
-        list.remove('marker-cluster-large');
-        list.remove('marker-cluster-medium');
-        list.remove('marker-cluster-small');
 
         if (num < 10) {
-          list.add('marker-cluster-small');
+          element.children[0].className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
         } else if (num < 100) {
-          list.add('marker-cluster-medium');
+          element.children[0].className = 'marker-cluster marker-cluster-medium leaflet-marker-icon';
         } else {
-          list.add('marker-cluster-large');
+          element.children[0].className = 'marker-cluster marker-cluster-large leaflet-marker-icon';
         }
       } else {
         element.children[0].innerText = "".concat(num);
 
-        var _list = _toConsumableArray(this._images.keys());
+        var list = _toConsumableArray(this._images.keys());
 
-        var len = _list.length;
+        var len = list.length;
 
         while (len--) {
-          var img = _list[len];
+          var img = list[len];
 
           if (num >= this._images.get(img).minThreshold) {
             var elm = element;
@@ -1047,9 +1048,12 @@ function () {
     key: "render",
     value: function render() {
       this._ready = true;
-      this.resetViewport();
 
-      this._createClusters();
+      if (this._iloader.ready) {
+        this.resetViewport();
+
+        this._createClusters();
+      }
     }
   }, {
     key: "_createClusters",
@@ -1077,6 +1081,13 @@ function () {
             }
           }
         }
+      }
+
+      len = this._clusters.length;
+
+      while (len--) {
+        var cl = this._clusters[len];
+        cl.finalize();
       }
     }
   }, {

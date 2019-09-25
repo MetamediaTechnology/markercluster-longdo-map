@@ -15,9 +15,9 @@ export default class{
     }
 
     addMarker(marker,tile){
-        if(this._markers.indexOf(marker) !== -1){
-            return false;
-        }
+        // if(this._markers.indexOf(marker) !== -1){
+        //     return false;
+        // }
         if(!this._center){
             this._center = marker.location();
             this._calculateBounds();
@@ -63,7 +63,7 @@ export default class{
             this.updateIcon();
             return true;
         }else if(this._config.swarmModeEnabled && this._config.swarmAlg === 2){
-            if(this._markers.length % 10 === 1){
+            if(this._markers.length < 11 || this._markers.length % 10 === 0){
                 if(!marker.active()){
                     this._map.Overlays.add(marker);
                 }
@@ -79,23 +79,30 @@ export default class{
             }
         }
         if(len === this._config.minClusterSize){
-            let lenc = len;
-            while(lenc--){
-                const m = this._markers[lenc];
-                if(m.active()){
-                    this._map.Overlays.remove(m);
-                }
+            let i = this._config.minClusterSize;
+            while(i--){
+                const m = this._markers[i];
+                this._map.Overlays.remove(m);
             }
         }
-        if(len >= this._config.minClusterSize){
-            let lenc = len;
-            while(lenc--){
-                const m = this._markers[lenc];
-                if(m.active()){
-                    this._map.Overlays.remove(m);
-                }
-            }
-        }
+        // if(len === this._config.minClusterSize){
+        //     let lenc = len;
+        //     while(lenc--){
+        //         const m = this._markers[lenc];
+        //         if(m.active()){
+        //             this._map.Overlays.remove(m);
+        //         }
+        //     }
+        // }
+        // if(len >= this._config.minClusterSize){
+        //     let lenc = len;
+        //     while(lenc--){
+        //         const m = this._markers[lenc];
+        //         if(m.active()){
+        //             this._map.Overlays.remove(m);
+        //         }
+        //     }
+        // }
         this.updateIcon();
         return true;
     }
@@ -131,14 +138,14 @@ export default class{
             return;
         }
 
-        if(this._markers.length < this._config.minClusterSize){
-            this._clusterIcon.hide();
-            return;
-        }
-        const sums = this._markers.length;
+        // if(this._markers.length < this._config.minClusterSize){
+        //     this._clusterIcon.hide();
+        //     return;
+        // }
+        // const sums = this._markers.length;
         this._clusterIcon.setCenter(this._center);
-        this._clusterIcon.setSums(sums);
-        this._clusterIcon.show();
+        // this._clusterIcon.setSums(sums);
+        // this._clusterIcon.show();
     }
 
     isMarkerInClusterBounds(marker){
@@ -152,5 +159,9 @@ export default class{
             }
         }
         return false;
+    }
+    finalize(){
+        this._clusterIcon.setSums(this._markers.length);
+        this._clusterIcon.show();
     }
 }
