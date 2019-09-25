@@ -115,7 +115,7 @@
 
 			var limit = 65000, loc = map.location();
 			while(limit--){
-				var lat = 13.755146+Math.random()-0.5, lon = 100.549577+Math.random()-0.5;
+				var lat = 13.755146+(Math.random()-0.5)*10, lon = 100.549577+(Math.random()-0.5)*10;
 				markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
 					icon:{
 							url: 'https://map.longdo.com/mmmap/images/pin_mark.png',

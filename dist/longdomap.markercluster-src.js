@@ -187,25 +187,20 @@ function () {
 
         this.updateIcon();
         return true;
-      }
-
-      var len = this._markers.length;
-
-      if (len < this._config.minClusterSize) {
-        if (!marker.active()) {
-          this._map.Overlays.add(marker);
-        }
-      }
-
-      if (len === this._config.minClusterSize) {
-        var i = this._config.minClusterSize;
-
-        while (i--) {
-          var m = this._markers[i];
-
-          this._map.Overlays.remove(m);
-        }
-      } // if(len === this._config.minClusterSize){
+      } // const len = this._markers.length;
+      // if (len < this._config.minClusterSize){
+      //     if(!marker.active()){
+      //         this._map.Overlays.add(marker);
+      //     }
+      // }
+      // if(len === this._config.minClusterSize){
+      //     let i = this._config.minClusterSize;
+      //     while(i--){
+      //         const m = this._markers[i];
+      //         this._map.Overlays.remove(m);
+      //     }
+      // }
+      // if(len === this._config.minClusterSize){
       //     let lenc = len;
       //     while(lenc--){
       //         const m = this._markers[lenc];
@@ -223,9 +218,9 @@ function () {
       //         }
       //     }
       // }
+      // this.updateIcon();
 
 
-      this.updateIcon();
       return true;
     }
   }, {
@@ -248,25 +243,19 @@ function () {
     value: function updateIcon() {
       if (this._config.drawMarkerArea) {
         this._bounds.drawArea(this._map);
-      }
+      } // const zoom = this._map.zoom();
+      // const mz = this._config.maxZoom;
+      // if(mz && zoom > mz || zoom === 20){
+      //     let len = this._markers.length;
+      //     while(len--){
+      //         const marker = this._markers[len];
+      //         if(!marker.active()){
+      //             this._map.Overlays.add(marker);
+      //         }
+      //     }
+      //     return;
+      // }
 
-      var zoom = this._map.zoom();
-
-      var mz = this._config.maxZoom;
-
-      if (mz && zoom > mz || zoom === 20) {
-        var len = this._markers.length;
-
-        while (len--) {
-          var marker = this._markers[len];
-
-          if (!marker.active()) {
-            this._map.Overlays.add(marker);
-          }
-        }
-
-        return;
-      }
 
       if (this._config.swarmModeEnabled) {
         //TODO
@@ -400,6 +389,34 @@ function () {
     value: function show() {
       if (!this._config.swarmModeEnabled) {
         var pos = this._center;
+
+        if (this._cluster._markers.length < this._config.minClusterSize) {
+          var marker = this._cluster._markers[0];
+
+          if (!marker.active()) {
+            this._cluster._map.Overlays.add(this._cluster._markers[0]);
+          }
+
+          return;
+        }
+
+        var zoom = this._map.zoom();
+
+        var mz = this._config.maxZoom;
+
+        if (mz && zoom > mz || zoom === 20) {
+          var len = this._cluster._markers.length;
+
+          while (len--) {
+            var _marker = this._markers[len];
+
+            if (!_marker.active()) {
+              this._cluster._map.Overlays.add(_marker);
+            }
+          }
+
+          return;
+        }
 
         this._clusterMarker.move({
           "lat": pos.lat,

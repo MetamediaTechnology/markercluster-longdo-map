@@ -73,19 +73,19 @@ export default class{
             return true;
         }
 
-        const len = this._markers.length;
-        if (len < this._config.minClusterSize){
-            if(!marker.active()){
-                this._map.Overlays.add(marker);
-            }
-        }
-        if(len === this._config.minClusterSize){
-            let i = this._config.minClusterSize;
-            while(i--){
-                const m = this._markers[i];
-                this._map.Overlays.remove(m);
-            }
-        }
+        // const len = this._markers.length;
+        // if (len < this._config.minClusterSize){
+        //     if(!marker.active()){
+        //         this._map.Overlays.add(marker);
+        //     }
+        // }
+        // if(len === this._config.minClusterSize){
+        //     let i = this._config.minClusterSize;
+        //     while(i--){
+        //         const m = this._markers[i];
+        //         this._map.Overlays.remove(m);
+        //     }
+        // }
         // if(len === this._config.minClusterSize){
         //     let lenc = len;
         //     while(lenc--){
@@ -104,7 +104,7 @@ export default class{
         //         }
         //     }
         // }
-        this.updateIcon();
+        // this.updateIcon();
         return true;
     }
     remove(){
@@ -121,18 +121,18 @@ export default class{
         if(this._config.drawMarkerArea){
             this._bounds.drawArea(this._map);
         }
-        const zoom = this._map.zoom();
-        const mz = this._config.maxZoom;
-        if(mz && zoom > mz || zoom === 20){
-            let len = this._markers.length;
-            while(len--){
-                const marker = this._markers[len];
-                if(!marker.active()){
-                    this._map.Overlays.add(marker);
-                }
-            }
-            return;
-        }
+        // const zoom = this._map.zoom();
+        // const mz = this._config.maxZoom;
+        // if(mz && zoom > mz || zoom === 20){
+        //     let len = this._markers.length;
+        //     while(len--){
+        //         const marker = this._markers[len];
+        //         if(!marker.active()){
+        //             this._map.Overlays.add(marker);
+        //         }
+        //     }
+        //     return;
+        // }
 
         if(this._config.swarmModeEnabled){
             //TODO

@@ -17,6 +17,25 @@ export class ClusterIcon{
     show(){
         if(!this._config.swarmModeEnabled){
             const pos = this._center;
+            if (this._cluster._markers.length < this._config.minClusterSize){
+                const marker = this._cluster._markers[0];
+                if(!marker.active()){
+                    this._cluster._map.Overlays.add(this._cluster._markers[0]);
+                }
+                return;
+            }
+            const zoom = this._map.zoom();
+            const mz = this._config.maxZoom;
+            if(mz && zoom > mz || zoom === 20){
+                let len = this._cluster._markers.length;
+                while(len--){
+                    const marker = this._markers[len];
+                    if(!marker.active()){
+                        this._cluster._map.Overlays.add(marker);
+                    }
+                }
+                return;
+            }
             this._clusterMarker.move({"lat":pos.lat,"lon":pos.lon});
             if(this._cluster._markers.length < this._config.minClusterSize){
                 this.hide();
