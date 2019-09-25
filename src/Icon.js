@@ -6,7 +6,6 @@ export class ClusterIcon{
         this._iloader = iloader;
         this._center = null;
         this._map = cluster._map;
-        this._visible = false;
         this._sums = null;
         this._clusterMarker = new longdo.Marker({"lat":0,"lon":0},{
             "icon": this._cluster._markerCluster._iloader.getIcon(0),
@@ -20,7 +19,7 @@ export class ClusterIcon{
             if (this._cluster._markers.length < this._config.minClusterSize){
                 const marker = this._cluster._markers[0];
                 if(!marker.active()){
-                    this._cluster._map.Overlays.add(this._cluster._markers[0]);
+                    this._map.Overlays.add(marker);
                 }
                 return;
             }
@@ -36,11 +35,6 @@ export class ClusterIcon{
                 }
                 return;
             }
-            this._clusterMarker.move({"lat":pos.lat,"lon":pos.lon});
-            if(this._cluster._markers.length < this._config.minClusterSize){
-                this.hide();
-                return;
-            }
             if(this._clusterMarker.active()){
                 this._map.Overlays.move(this._clusterMarker,pos);
             }else{
@@ -54,7 +48,6 @@ export class ClusterIcon{
                     this._map.Overlays.add(this._poly);
                 }
             }
-            this._visible = true;
         }
     }
     remove(){
@@ -64,23 +57,8 @@ export class ClusterIcon{
             this._poly = null;
         }
     }
-    hide(){
-        this._map.Overlays.remove(this._clusterMarker);
-        this._visible = false;
-        if(this._config.drawMarkerArea){
-            if(!this._poly){
-                this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(),{"fillColor": "rgba(0,0,0,0.3)"});
-            }
-            if(!this._poly.active()){
-                this._map.Overlays.add(this._poly);
-            }
-        }
-    }
     setCenter(center){
         this._center = center;
-        // if(this._clusterMarker){
-        //     this._clusterMarker.move({"lat":center.lat,"lon":center.lon});
-        // }
     }
     setSums(sums){
         if(this._sums && sums === this._sums){return;}

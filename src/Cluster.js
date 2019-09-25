@@ -15,10 +15,6 @@ export default class{
     }
 
     addMarker(marker,tile){
-        // if(this._markers.indexOf(marker) !== -1){
-        //     return false;
-        // }
-
         if(!this._center){
             this._center = marker.location();
             this._calculateBounds();
@@ -26,10 +22,15 @@ export default class{
             if(this._config.averageCenter){
                 this._center = longdo.Util.averageLocation(longdo.Projections.EPSG3857,
                     this._center,marker.location());
+                this._calculateBounds();
             }
         }
         marker.isAdded = true;
         this._markers.push(marker);
+
+        if(this._config.drawMarkerArea){
+            this._bounds.drawArea(this._map);
+        }
 
         if(this._config.swarmModeEnabled && this._config.swarmAlg === 1){
             //TODO
@@ -61,7 +62,6 @@ export default class{
             if(!marker.active()){
                 this._map.Overlays.add(marker);
             }
-            this.updateIcon();
             return true;
         }else if(this._config.swarmModeEnabled && this._config.swarmAlg === 2){
             if(this._markers.length < 11 || this._markers.length % 10 === 0){
@@ -69,42 +69,8 @@ export default class{
                     this._map.Overlays.add(marker);
                 }
             }
-            this.updateIcon();
             return true;
         }
-
-        // const len = this._markers.length;
-        // if (len < this._config.minClusterSize){
-        //     if(!marker.active()){
-        //         this._map.Overlays.add(marker);
-        //     }
-        // }
-        // if(len === this._config.minClusterSize){
-        //     let i = this._config.minClusterSize;
-        //     while(i--){
-        //         const m = this._markers[i];
-        //         this._map.Overlays.remove(m);
-        //     }
-        // }
-        // if(len === this._config.minClusterSize){
-        //     let lenc = len;
-        //     while(lenc--){
-        //         const m = this._markers[lenc];
-        //         if(m.active()){
-        //             this._map.Overlays.remove(m);
-        //         }
-        //     }
-        // }
-        // if(len >= this._config.minClusterSize){
-        //     let lenc = len;
-        //     while(lenc--){
-        //         const m = this._markers[lenc];
-        //         if(m.active()){
-        //             this._map.Overlays.remove(m);
-        //         }
-        //     }
-        // }
-        // this.updateIcon();
         return true;
     }
     remove(){
@@ -117,49 +83,9 @@ export default class{
     _calculateBounds(){
         this._bounds = LLBBox.generateRect(this._center).extendSize(this._config.gridSize*Math.pow(2,-this._map.zoom()));     
     }
-    updateIcon(){
-        if(this._config.drawMarkerArea){
-            this._bounds.drawArea(this._map);
-        }
-        // const zoom = this._map.zoom();
-        // const mz = this._config.maxZoom;
-        // if(mz && zoom > mz || zoom === 20){
-        //     let len = this._markers.length;
-        //     while(len--){
-        //         const marker = this._markers[len];
-        //         if(!marker.active()){
-        //             this._map.Overlays.add(marker);
-        //         }
-        //     }
-        //     return;
-        // }
-
-        if(this._config.swarmModeEnabled){
-            //TODO
-            return;
-        }
-
-        // if(this._markers.length < this._config.minClusterSize){
-        //     this._clusterIcon.hide();
-        //     return;
-        // }
-        // const sums = this._markers.length;
-        // this._clusterIcon.setCenter(this._center);
-        // this._clusterIcon.setSums(sums);
-        // this._clusterIcon.show();
-    }
 
     isMarkerInClusterBounds(marker){
         return this._bounds.isLocInBounds(marker.location());
-    }
-    containsMarker(marker){
-        let len = this._markers.length;
-        while(len--){
-            if(this._markers[len] === marker){
-                return true;
-            }
-        }
-        return false;
     }
     finalize(){
         this._clusterIcon.setSums(this._markers.length);

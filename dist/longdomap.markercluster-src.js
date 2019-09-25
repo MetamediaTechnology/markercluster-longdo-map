@@ -127,9 +127,6 @@ function () {
   _createClass(_default, [{
     key: "addMarker",
     value: function addMarker(marker, tile) {
-      // if(this._markers.indexOf(marker) !== -1){
-      //     return false;
-      // }
       if (!this._center) {
         this._center = marker.location();
 
@@ -137,12 +134,18 @@ function () {
       } else {
         if (this._config.averageCenter) {
           this._center = longdo.Util.averageLocation(longdo.Projections.EPSG3857, this._center, marker.location());
+
+          this._calculateBounds();
         }
       }
 
       marker.isAdded = true;
 
       this._markers.push(marker);
+
+      if (this._config.drawMarkerArea) {
+        this._bounds.drawArea(this._map);
+      }
 
       if (this._config.swarmModeEnabled && this._config.swarmAlg === 1) {
         //TODO
@@ -176,7 +179,6 @@ function () {
           this._map.Overlays.add(marker);
         }
 
-        this.updateIcon();
         return true;
       } else if (this._config.swarmModeEnabled && this._config.swarmAlg === 2) {
         if (this._markers.length < 11 || this._markers.length % 10 === 0) {
@@ -185,41 +187,8 @@ function () {
           }
         }
 
-        this.updateIcon();
         return true;
-      } // const len = this._markers.length;
-      // if (len < this._config.minClusterSize){
-      //     if(!marker.active()){
-      //         this._map.Overlays.add(marker);
-      //     }
-      // }
-      // if(len === this._config.minClusterSize){
-      //     let i = this._config.minClusterSize;
-      //     while(i--){
-      //         const m = this._markers[i];
-      //         this._map.Overlays.remove(m);
-      //     }
-      // }
-      // if(len === this._config.minClusterSize){
-      //     let lenc = len;
-      //     while(lenc--){
-      //         const m = this._markers[lenc];
-      //         if(m.active()){
-      //             this._map.Overlays.remove(m);
-      //         }
-      //     }
-      // }
-      // if(len >= this._config.minClusterSize){
-      //     let lenc = len;
-      //     while(lenc--){
-      //         const m = this._markers[lenc];
-      //         if(m.active()){
-      //             this._map.Overlays.remove(m);
-      //         }
-      //     }
-      // }
-      // this.updateIcon();
-
+      }
 
       return true;
     }
@@ -239,54 +208,9 @@ function () {
       this._bounds = _LLBBox__WEBPACK_IMPORTED_MODULE_1__["LLBBox"].generateRect(this._center).extendSize(this._config.gridSize * Math.pow(2, -this._map.zoom()));
     }
   }, {
-    key: "updateIcon",
-    value: function updateIcon() {
-      if (this._config.drawMarkerArea) {
-        this._bounds.drawArea(this._map);
-      } // const zoom = this._map.zoom();
-      // const mz = this._config.maxZoom;
-      // if(mz && zoom > mz || zoom === 20){
-      //     let len = this._markers.length;
-      //     while(len--){
-      //         const marker = this._markers[len];
-      //         if(!marker.active()){
-      //             this._map.Overlays.add(marker);
-      //         }
-      //     }
-      //     return;
-      // }
-
-
-      if (this._config.swarmModeEnabled) {
-        //TODO
-        return;
-      } // if(this._markers.length < this._config.minClusterSize){
-      //     this._clusterIcon.hide();
-      //     return;
-      // }
-      // const sums = this._markers.length;
-      // this._clusterIcon.setCenter(this._center);
-      // this._clusterIcon.setSums(sums);
-      // this._clusterIcon.show();
-
-    }
-  }, {
     key: "isMarkerInClusterBounds",
     value: function isMarkerInClusterBounds(marker) {
       return this._bounds.isLocInBounds(marker.location());
-    }
-  }, {
-    key: "containsMarker",
-    value: function containsMarker(marker) {
-      var len = this._markers.length;
-
-      while (len--) {
-        if (this._markers[len] === marker) {
-          return true;
-        }
-      }
-
-      return false;
     }
   }, {
     key: "finalize",
@@ -373,7 +297,6 @@ function () {
     this._iloader = iloader;
     this._center = null;
     this._map = cluster._map;
-    this._visible = false;
     this._sums = null;
     this._clusterMarker = new longdo.Marker({
       "lat": 0,
@@ -394,7 +317,7 @@ function () {
           var marker = this._cluster._markers[0];
 
           if (!marker.active()) {
-            this._cluster._map.Overlays.add(this._cluster._markers[0]);
+            this._map.Overlays.add(marker);
           }
 
           return;
@@ -418,16 +341,6 @@ function () {
           return;
         }
 
-        this._clusterMarker.move({
-          "lat": pos.lat,
-          "lon": pos.lon
-        });
-
-        if (this._cluster._markers.length < this._config.minClusterSize) {
-          this.hide();
-          return;
-        }
-
         if (this._clusterMarker.active()) {
           this._map.Overlays.move(this._clusterMarker, pos);
         } else {
@@ -447,8 +360,6 @@ function () {
             this._map.Overlays.add(this._poly);
           }
         }
-
-        this._visible = true;
       }
     }
   }, {
@@ -463,30 +374,9 @@ function () {
       }
     }
   }, {
-    key: "hide",
-    value: function hide() {
-      this._map.Overlays.remove(this._clusterMarker);
-
-      this._visible = false;
-
-      if (this._config.drawMarkerArea) {
-        if (!this._poly) {
-          this._poly = new longdo.Polygon(this._cluster._bounds.getRectVertex(), {
-            "fillColor": "rgba(0,0,0,0.3)"
-          });
-        }
-
-        if (!this._poly.active()) {
-          this._map.Overlays.add(this._poly);
-        }
-      }
-    }
-  }, {
     key: "setCenter",
     value: function setCenter(center) {
-      this._center = center; // if(this._clusterMarker){
-      //     this._clusterMarker.move({"lat":center.lat,"lon":center.lon});
-      // }
+      this._center = center;
     }
   }, {
     key: "setSums",
@@ -995,23 +885,9 @@ function () {
 
       that._createClusters();
     });
-    /*
-    this._map.Event.bind('drag', function(move){
-     if(that._ready){
-         that.resetViewport();
-         that._createClusters();
-     }
-    });
-    */
-    //    this._map.Event.bind('loadTile',function(str) {
-    //         if(str !== 'finish' && !that._ready && !that._iloader.ready){return;}
-    //         that.resetViewport();
-    //         that._createClusters();
-    //     });
-
 
     this._map.Event.bind('overlayClick', function (overlay) {
-      if (!that._ready) {
+      if (!that._ready && !that._iloader.ready) {
         return;
       }
 
@@ -1026,8 +902,7 @@ function () {
 
           while (len2--) {
             l.push(cl._markers[len2].location());
-          } //that._map.bound(cl._bounds.getBounds());
-
+          }
 
           that._map.bound(longdo.Util.locationBound(l));
 
@@ -1057,7 +932,7 @@ function () {
         this._markers.push(m);
       }
 
-      if (this.config.swarmModeEnabled && this.config.swarmAlg === 2) {
+      if (this.config.swarmModeEnabled && this.config.swarmAlg === 1) {
         this.shuffle();
       }
     }
@@ -1085,10 +960,6 @@ function () {
   }, {
     key: "_createClusters",
     value: function _createClusters() {
-      if (!this._ready) {
-        return;
-      }
-
       var mapBounds = _LLBBox__WEBPACK_IMPORTED_MODULE_0__["LLBBox"].generateFrom(this._map.bound());
       var bounds = mapBounds.extendSize(this.config.gridSize * Math.pow(2, -this._map.zoom()));
       var len = this._markers.length;

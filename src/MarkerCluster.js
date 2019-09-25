@@ -42,21 +42,9 @@ export default class MarkerCluster{
             if(!that._ready && !that._iloader.ready){return;}
             that.resetViewport();
             that._createClusters();
-        });/*
-        this._map.Event.bind('drag', function(move){
-            if(that._ready){
-                that.resetViewport();
-                that._createClusters();
-            }
         });
-        */
-    //    this._map.Event.bind('loadTile',function(str) {
-    //         if(str !== 'finish' && !that._ready && !that._iloader.ready){return;}
-    //         that.resetViewport();
-    //         that._createClusters();
-    //     });
         this._map.Event.bind('overlayClick', function(overlay){
-            if(!that._ready){return;}
+            if(!that._ready && !that._iloader.ready){return;}
             let len = that._clusters.length;
             while(len--){
                 const cl = that._clusters[len];
@@ -66,7 +54,6 @@ export default class MarkerCluster{
                     while(len2--){
                         l.push(cl._markers[len2].location());
                     }
-                    //that._map.bound(cl._bounds.getBounds());
                     that._map.bound(longdo.Util.locationBound(l));
                     setTimeout(function(){
                         that.resetViewport();
@@ -87,7 +74,7 @@ export default class MarkerCluster{
             const m = markers[len];
             this._markers.push(m);
         }
-        if(this.config.swarmModeEnabled && this.config.swarmAlg === 2){
+        if(this.config.swarmModeEnabled && this.config.swarmAlg === 1){
             this.shuffle();
         }
     }
@@ -107,7 +94,6 @@ export default class MarkerCluster{
         }
     }
     _createClusters(){
-        if(!this._ready){return;}
         const mapBounds = LLBBox.generateFrom(this._map.bound());
         const bounds = mapBounds.extendSize(this.config.gridSize*Math.pow(2,-this._map.zoom()));
         let len = this._markers.length;
