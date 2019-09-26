@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="data.json"></script>
+	<script src="https://api.longdo.com/map/?key=171082bb9618aa7b985baa7098d6bdce"></script>
+	<link rel="stylesheet" href="./MarkerCluster.Default.css">
+	<script type="text/javascript" src="longdomap.markercluster-src.js"></script>
+	<title>MarkerCluster Demo</title>
+	<style type="text/css">
+          html{
+            height:100%;
+          }
+          body{
+            margin:0px;
+            height:100%;
+          }
+          #map {
+            height: 100%;
+            width: 100%;
+          }
+        </style>
+</head>
+<body onload="init();">
+<div id="map"></div>
+<script type="text/javascript">
+	var map;
+	var markercluster;
+	var img;
+	var styles = [{
+		url: "./m4.png",
+		width: 77,
+		height: 77,
+		minThreshold: 60
+	},{
+		url: "./m5.png",
+		width: 89,
+		height: 89,
+		minThreshold:100
+	},{
+		url: "./m2.png",
+		width: 55,
+		height: 55,
+		minThreshold:10
+	},{
+		url: "./m3.png",
+		width: 65,
+		height: 65,
+		minThreshold:30
+	},{
+		url: "./m1.png",
+		width: 52,
+		height: 52,
+		minThreshold:0
+	}];
+	function init() {
+		map = new longdo.Map({
+			placeholder: document.getElementById('map'),
+			language: 'en',
+			location: {lat:13.689128, lon:100.491781}
+		});
+		markercluster = new lmc.MarkerCluster(map,
+		{
+			minClusterSize: 2,
+			styles: styles
+		});
+		img = new Image();
+		img.onload = function() {
+			var len = data.photos.length;
+			while(len--){
+				var d = data.photos[len];
+				markercluster.addMarkers(new longdo.Marker({lat:d.latitude,lon:d.longitude},{
+					icon:{
+							url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
+							offset: { x: 12, y: 45 },
+							size: {width: 24, height: 45}
+						}
+				}));
+			}
+			markercluster.render();
+		};
+		img.src = 'https://map.longdo.com/mmmap/images/pin_mark.png';
+	}
+</script>
+</body>
+</html>

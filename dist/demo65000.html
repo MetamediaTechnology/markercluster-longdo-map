@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://api.longdo.com/map/?key=171082bb9618aa7b985baa7098d6bdce"></script>
+	<link rel="stylesheet" href="./MarkerCluster.Default.css">
+	<script type="text/javascript" src="longdomap.markercluster-src.js"></script>
+	<title>Demo65000</title>
+	<style type="text/css">
+          html{
+            height:100%;
+          }
+          body{
+            margin:0px;
+            height:100%;
+          }
+          #map {
+            height: 100%;
+            width: 100%;
+          }
+        </style>
+</head>
+<body onload="init();">
+<div id="map"></div>
+<script type="text/javascript">
+	var map;
+	var markercluster;
+	var limit = 65000;
+	function init() {
+		map = new longdo.Map({
+			placeholder: document.getElementById('map'),
+			language: 'en',
+			location: {lat:13.689128, lon:100.491781},
+			zoom: 5
+		});
+		markercluster = new lmc.MarkerCluster(map,{});
+		var loc = map.location();
+		while(limit--){
+			var lat = 13.689128+(Math.random()-0.5)*10, lon = 100.491781+(Math.random()-0.5)*10;
+			markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{}));
+		}
+		markercluster.render();
+	}
+</script>
+</body>
+</html>

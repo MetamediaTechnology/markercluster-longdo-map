@@ -404,7 +404,7 @@ function () {
     this._markerCluster = markercluster;
     this._config = config;
     this._images = new Map();
-    this.ready = false;
+    this.ready = true;
     this.useDefault = true;
 
     if (this._config.styles) {
@@ -414,7 +414,7 @@ function () {
 
   _createClass(IconLoader, [{
     key: "load",
-    value: function load(url, width, height, minThreshold) {
+    value: function load(url, width, height, minThreshold, callback) {
       this.ready = false;
       this.useDefault = false;
       var img = new Image(width, height);
@@ -438,6 +438,10 @@ function () {
 
           that._markerCluster._createClusters();
         }
+
+        if (callback) {
+          callback();
+        }
       };
 
       img.src = url;
@@ -450,10 +454,13 @@ function () {
         return elm1.minThreshold < elm2.minThreshold ? 1 : elm1.minThreshold === elm2.minThreshold ? 0 : -1;
       });
       var len = styles.length;
+      var that = this;
 
       while (len--) {
         var style = styles[len];
-        this.load(style.url, style.width, style.height, style.minThreshold);
+        this.load(style.url, style.width, style.height, style.minThreshold, len === 0 ? function () {
+          return that.ready = true;
+        } : null);
       }
     }
   }, {
@@ -841,7 +848,7 @@ function () {
     var that = this;
 
     this._map.Event.bind('ready', function () {
-      if (!that._ready && !that._iloader.ready) {
+      if (!that._ready || !that._iloader.ready) {
         return;
       }
 
@@ -854,22 +861,15 @@ function () {
     this._map.Event.bind('zoom', function ()
     /*pivot*/
     {
-      if (!that._ready && !that._iloader.ready) {
+      if (!that._ready || !that._iloader.ready) {
         return;
       }
 
-      var zoom = that._map.zoom();
-
-      if (that._prevZoom !== zoom) {
-        that._prevZoom = zoom;
-        that.resetViewport();
-
-        that._createClusters();
-      }
+      that.resetViewport(); // that._createClusters();
     });
 
     this._map.Event.bind('idle', function () {
-      if (!that._ready && !that._iloader.ready) {
+      if (!that._ready || !that._iloader.ready) {
         return;
       } //that.resetViewport();
       //that._createClusters();
@@ -877,7 +877,7 @@ function () {
     });
 
     this._map.Event.bind('drop', function () {
-      if (!that._ready && !that._iloader.ready) {
+      if (!that._ready || !that._iloader.ready) {
         return;
       }
 
@@ -887,7 +887,7 @@ function () {
     });
 
     this._map.Event.bind('overlayClick', function (overlay) {
-      if (!that._ready && !that._iloader.ready) {
+      if (!that._ready || !that._iloader.ready) {
         return;
       }
 
@@ -904,16 +904,25 @@ function () {
             l.push(cl._markers[len2].location());
           }
 
-          that._map.bound(longdo.Util.locationBound(l));
+          that._map.bound(longdo.Util.locationBound(l)); // setTimeout(function(){
+          //     that.resetViewport();
+          //     that._createClusters();
+          // },10);
 
-          setTimeout(function () {
-            that.resetViewport();
 
-            that._createClusters();
-          }, 0);
           return;
         }
       }
+    });
+
+    this._map.Event.bind('loadTile', function (s) {
+      if (s !== 'finish' || !that._ready || !that._iloader.ready) {
+        return;
+      }
+
+      that.resetViewport();
+
+      that._createClusters();
     });
   }
 
