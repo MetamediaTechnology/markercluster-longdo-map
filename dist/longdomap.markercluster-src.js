@@ -108,10 +108,21 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 
 var longdo = window.longdo;
+/**
+ * class for cluster
+ * @export Cluster
+ * @class Cluster
+ */
 
 var _default =
 /*#__PURE__*/
 function () {
+  /**
+   * Creates an isntance of Cluster
+   * @param {MarkerCluster} markerCluster MarkerCluster instance
+   * @param {ConfigHandler} config config variables
+   * @param {IconLoader} iloader IconLoader instance
+   */
   function _default(markerCluster, config, iloader) {
     _classCallCheck(this, _default);
 
@@ -123,6 +134,13 @@ function () {
     this._bounds = null;
     this._clusterIcon = new _Icon__WEBPACK_IMPORTED_MODULE_0__["ClusterIcon"](this, this._config, iloader);
   }
+  /**
+   * add marker to the cluster
+   * @param {longdo.Marker} marker marker to be added
+   * @param {longdo.Tile} [tile] tile including marker(optional), needed only in swarm mode 1.
+   * @returns {undefined}
+   */
+
 
   _createClass(_default, [{
     key: "addMarker",
@@ -192,6 +210,11 @@ function () {
 
       return true;
     }
+    /**
+     * remove icon & itself
+     * @returns {undefined}
+     */
+
   }, {
     key: "remove",
     value: function remove() {
@@ -202,16 +225,32 @@ function () {
 
       this._bounds.removeArea(this._map);
     }
+    /**
+     * calculate cluster bound
+     * @returns {undefined}
+     */
+
   }, {
     key: "_calculateBounds",
     value: function _calculateBounds() {
       this._bounds = _LLBBox__WEBPACK_IMPORTED_MODULE_1__["LLBBox"].generateRect(this._center).extendSize(this._config.gridSize * Math.pow(2, -this._map.zoom()));
     }
+    /**
+     * returns whether marker is inside cluster bounds
+     * @param {longdo.Marker} marker marker to be checked
+     * @returns {boolean} If marker is inside cluster bound, returns true
+     */
+
   }, {
     key: "isMarkerInClusterBounds",
     value: function isMarkerInClusterBounds(marker) {
       return this._bounds.isLocInBounds(marker.location());
     }
+    /**
+     * update icon's style and position and then show on map
+     * @returns {undefined}
+     */
+
   }, {
     key: "finalize",
     value: function finalize() {
@@ -242,6 +281,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return _default; });
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * class for carrying config/option values
+ * @export ConfigHandler
+ * @class ConfigHandler
+ */
 var _default = function _default(options) {
   _classCallCheck(this, _default);
 
@@ -285,10 +329,24 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+/** @module Icon */
 var longdo = window.longdo;
+/**
+ * Class for managing cluster's icon & children markers' icons
+ * @export ClusterIcon
+ * @class ClusterIcon
+ */
+
 var ClusterIcon =
 /*#__PURE__*/
 function () {
+  /**
+   *Creates an instance of ClusterIcon.
+   * @param {Cluster} cluster cluster in charge of this
+   * @param {ConfigHandler} config config variables
+   * @param {IconLoader} iloader cluster icon carrier
+   * @memberof ClusterIcon
+   */
   function ClusterIcon(cluster, config, iloader) {
     _classCallCheck(this, ClusterIcon);
 
@@ -306,6 +364,12 @@ function () {
       "weight": longdo.OverlayWeight.Top
     });
   }
+  /**
+   * show cluster icons & marker icons if needed
+   * @returns {undefined}
+   * @memberof ClusterIcon
+   */
+
 
   _createClass(ClusterIcon, [{
     key: "show",
@@ -362,6 +426,12 @@ function () {
         }
       }
     }
+    /**
+     * remove cluster icon from the map
+     * @memberof ClusterIcon
+     * @returns {undefined}
+     */
+
   }, {
     key: "remove",
     value: function remove() {
@@ -373,11 +443,25 @@ function () {
         this._poly = null;
       }
     }
+    /**
+     * set position where cluster icon will be rendered
+     * @param {longdo.Location} center position for cluster icon to be rendered
+     * @memberof ClusterIcon
+     * @returns {undefined}
+     */
+
   }, {
     key: "setCenter",
     value: function setCenter(center) {
       this._center = center;
     }
+    /**
+     * set number displaying in cluster
+     * @param {number} sums numbers to change to
+     * @returns {undefined}
+     * @memberof ClusterIcon
+     */
+
   }, {
     key: "setSums",
     value: function setSums(sums) {
@@ -395,9 +479,21 @@ function () {
 
   return ClusterIcon;
 }();
+/**
+ * class for loading cluser icons & carrying them
+ * @export IconLoader
+ * @class IconLoader
+ */
+
 var IconLoader =
 /*#__PURE__*/
 function () {
+  /**
+   *Creates an instance of IconLoader.
+   * @param {MarkerCluster} markercluster MarkerCluster instance
+   * @param {ConfigHandler} config config variables
+   * @memberof IconLoader
+   */
   function IconLoader(markercluster, config) {
     _classCallCheck(this, IconLoader);
 
@@ -411,6 +507,17 @@ function () {
       this.loadStyles(this._config.styles);
     }
   }
+  /**
+   * load style of icons
+   * @param {string} url url of icon image
+   * @param {number} width width of the image
+   * @param {number} height height of the image
+   * @param {number} minThreshold minimum threshold of size of cluster
+   * @param {Function} [callback] callback function to be called on finishing loading
+   * @returns {number} index of loaded style
+   * @memberof IconLoader
+   */
+
 
   _createClass(IconLoader, [{
     key: "load",
@@ -447,6 +554,13 @@ function () {
       img.src = url;
       return this._images.keys.length - 1;
     }
+    /**
+     * load styles config value
+     * @param {Array<Object>} styles styles to be loaded
+     * @memberof IconLoader
+     * @returns {undefined}
+     */
+
   }, {
     key: "loadStyles",
     value: function loadStyles(styles) {
@@ -463,6 +577,13 @@ function () {
         } : null);
       }
     }
+    /**
+     * returns icon config object according to longdo Marker icon syntax
+     * @param {number} index index number to get icon style
+     * @returns {Object} icon config values object 
+     * @memberof IconLoader
+     */
+
   }, {
     key: "getIcon",
     value: function getIcon(index) {
@@ -513,6 +634,14 @@ function () {
 
       return result;
     }
+    /**
+     * change displaying number in cluster
+     * @param {HTMLElement} element element of cluster needing to be made changes
+     * @param {number} num number to change to 
+     * @memberof IconLoader
+     * @returns {undefined}
+     */
+
   }, {
     key: "changeNumber",
     value: function changeNumber(element, num) {
@@ -575,9 +704,20 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var longdo = window.longdo;
+/**
+ * class for carrying bound information
+ * @export LLBBox
+ * @class LLBBox
+ */
+
 var LLBBox =
 /*#__PURE__*/
 function () {
+  /**
+   *Creates an instance of LLBBox.
+   * @param {Array<longdo.Location>} locations array of locations to create bound
+   * @memberof LLBBox
+   */
   function LLBBox(locations) {
     _classCallCheck(this, LLBBox);
 
@@ -589,9 +729,23 @@ function () {
       this._bounds = longdo.Util.locationBound(this._locationList);
     }
   }
+  /**
+   * generate the instance set up bound
+   * @static
+   * @param {longdo.Bound} bound bound to be set up
+   * @returns {LLBBox} instance of this class
+   * @memberof LLBBox
+   */
+
 
   _createClass(LLBBox, [{
     key: "getBounds",
+
+    /**
+     * returns bound
+     * @returns {longdo.Bound} bound
+     * @memberof LLBBox
+     */
     value: function getBounds() {
       return {
         'minLon': this._bounds.minLon,
@@ -600,6 +754,12 @@ function () {
         'maxLat': this._bounds.maxLat
       };
     }
+    /**
+     * returns Left-Top of the bound
+     * @returns {longdo.Location} left-top vertex of the bound
+     * @memberof LLBBox
+     */
+
   }, {
     key: "LT",
     value: function LT() {
@@ -608,6 +768,12 @@ function () {
         "lat": this._bounds.maxLat
       };
     }
+    /**
+     * returns Right-Top of the bound
+     * @returns {londgo.Location} right-top vertex of the bound
+     * @memberof LLBBox
+     */
+
   }, {
     key: "RT",
     value: function RT() {
@@ -616,6 +782,12 @@ function () {
         "lat": this._bounds.maxLat
       };
     }
+    /**
+     * returns Left-Bottom of the bound
+     * @returns {longdo.Location} left-bottom vertex of the bound
+     * @memberof LLBBox
+     */
+
   }, {
     key: "LB",
     value: function LB() {
@@ -624,6 +796,12 @@ function () {
         "lat": this._bounds.minLat
       };
     }
+    /**
+     * returns right-bottom of the bound
+     * @returns {longdo.Locaton} right-bottom vertex of the bound
+     * @memberof LLBBox
+     */
+
   }, {
     key: "RB",
     value: function RB() {
@@ -638,6 +816,13 @@ function () {
       var b = longdo.Util.locationBound(this._originalLocationList);
       return b;
     }
+    /**
+     * add location to bound and extend bound in order to include added location
+     * @param {longdo.Location} location location to be added
+     * @memberof LLBBox
+     * @returns {undefined}
+     */
+
   }, {
     key: "add",
     value: function add(location) {
@@ -647,6 +832,13 @@ function () {
 
       this._bounds = longdo.Util.locationBound(this._locationList);
     }
+    /**
+     * remove location from the bound
+     * @param {longdo.Location} location location to be removed
+     * @memberof LLBBox
+     * @returns {undefined}
+     */
+
   }, {
     key: "remove",
     value: function remove(location) {
@@ -658,22 +850,48 @@ function () {
       });
       this._bounds = this.empty() ? null : longdo.Util.locationBound(this._locationList);
     }
+    /**
+     * return whether including no locations or not
+     * @returns {boolean} return true if containing no location
+     * @memberof LLBBox
+     */
+
   }, {
     key: "empty",
     value: function empty() {
       return this._locationList.length === 0;
     }
+    /**
+     * returns array of locations included itself
+     * @returns {Array<longdo.Location>} array of locations included in itself
+     * @memberof LLBBox
+     */
+
   }, {
     key: "getLocations",
     value: function getLocations() {
       return this._locationList.slice();
     }
+    /**
+     * returns whether given location is within its bound
+     * @param {longdo.Location} loc location to be checked
+     * @returns {boolaen} returns true if location is in bound
+     * @memberof LLBBox
+     */
+
   }, {
     key: "isLocInBounds",
     value: function isLocInBounds(loc) {
       var result = longdo.Util.contains(loc, this.getRectVertex());
       return result === null ? true : result;
     }
+    /**
+     * extend bound size
+     * @param {number} diff size to extends
+     * @returns {LLBBox} itself
+     * @memberof LLBBox
+     */
+
   }, {
     key: "extendSize",
     value: function extendSize(diff) {
@@ -704,6 +922,12 @@ function () {
       this._bounds = longdo.Util.locationBound(this._locationList);
       return this;
     }
+    /**
+     * returns array of vertex by order of drawing rect
+     * @returns {Array<longdo.Location>} array of vertex locations
+     * @memberof LLBBox
+     */
+
   }, {
     key: "getRectVertex",
     value: function getRectVertex() {
@@ -721,12 +945,26 @@ function () {
         "lat": this._bounds.minLat
       }];
     }
+    /**
+     * draw polygon to show bound
+     * @param {longdo.Map} map map for polygon to show
+     * @memberof LLBBox
+     * @returns {undefined}
+     */
+
   }, {
     key: "drawArea",
     value: function drawArea(map) {
       this._poly = new longdo.Polygon(this.getRectVertex());
       map.Overlays.add(this._poly);
     }
+    /**
+     * remove polygon from map
+     * @param {longdo.Map} map map where the polygon will be removed
+     * @memberof LLBBox
+     * @returns {undefined}
+     */
+
   }, {
     key: "removeArea",
     value: function removeArea(map) {
@@ -735,6 +973,14 @@ function () {
         delete this._poly;
       }
     }
+    /**
+     * returns relative coordinates in given N x N grid
+     * @param {longdo.Location} loc location to be checked
+     * @param {number} n size of width,height of the grid
+     * @returns {longdo.Tile} coordinates(Tile)
+     * @memberof LLBBox
+     */
+
   }, {
     key: "getNxNGridCord",
     value: function getNxNGridCord(loc, n) {
@@ -759,11 +1005,25 @@ function () {
     Adapted from https://wiki.openstreetmap.org/wiki/Mercator
     */
 
+    /**
+     * convert y pixel coordinate into latitude
+     * @param {number} y pixel coordinate
+     * @returns {number} latitude
+     * @memberof LLBBox
+     */
+
   }, {
     key: "_y2lat",
     value: function _y2lat(y) {
       return (Math.atan(Math.exp(y / (180 / Math.PI))) / (Math.PI / 4) - 1) * 90;
     }
+    /**
+     * convert latitude into y pixel coordinate
+     * @param {number} lat latitude
+     * @returns {number} y pixel coordinate
+     * @memberof LLBBox
+     */
+
   }, {
     key: "_lat2y",
     value: function _lat2y(lat) {
@@ -780,6 +1040,15 @@ function () {
         'lat': bound.maxLat
       }]);
     }
+    /**
+     * generate the instance set up rect bound from 1 or 2 vertex
+     * @static
+     * @param {longdo.Location} loc1 1st vertex
+     * @param {longdo.Location} [loc2] 2nd vertex, if not provided, it will be as the same as loc1
+     * @returns {LLBBox} instance of this class
+     * @memberof LLBBox
+     */
+
   }, {
     key: "generateRect",
     value: function generateRect(loc1, loc2) {
@@ -822,6 +1091,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+/** @module MarkerCluster*/
 if (typeof window.longdo === 'undefined') {
   throw new Error('longdo API must be loaded before the longdomap markercluster plugin');
 }
@@ -831,10 +1101,22 @@ var longdo = window.longdo;
 
 
 
+/**
+ * Class for MarkerCluster
+ *
+ * @export MarkerCluser
+ * @class MarkerCluster
+ */
 
 var MarkerCluster =
 /*#__PURE__*/
 function () {
+  /**
+   *Creates an instance of MarkerCluster.
+   * @param {longdo.Map} map Longdo Map instance
+   * @param {Object} options Options for MarkerCluster
+   * @memberof MarkerCluster
+   */
   function MarkerCluster(map, options) {
     _classCallCheck(this, MarkerCluster);
 
@@ -866,14 +1148,6 @@ function () {
       }
 
       that.resetViewport(); // that._createClusters();
-    });
-
-    this._map.Event.bind('idle', function () {
-      if (!that._ready || !that._iloader.ready) {
-        return;
-      } //that.resetViewport();
-      //that._createClusters();
-
     });
 
     this._map.Event.bind('drop', function () {
@@ -925,6 +1199,13 @@ function () {
       that._createClusters();
     });
   }
+  /**
+   * add marker(s) to plugins's management
+   * @param {longdo.Marker| Array<longdo.Marker>} markers marker(s) to add
+   * @memberof MarkerCluster
+   * @returns {undefined}
+   */
+
 
   _createClass(MarkerCluster, [{
     key: "addMarkers",
@@ -945,6 +1226,12 @@ function () {
         this.shuffle();
       }
     }
+    /**
+     * randomize elements order in {@link MarkerCluster._markers}
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
+
   }, {
     key: "shuffle",
     value: function shuffle() {
@@ -955,6 +1242,12 @@ function () {
         this._markers[r] = temp;
       }
     }
+    /**
+     * start rendering if icons-loading finished
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
+
   }, {
     key: "render",
     value: function render() {
@@ -966,6 +1259,12 @@ function () {
         this._createClusters();
       }
     }
+    /**
+     * choose markers in Map bound & add to clusters
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
+
   }, {
     key: "_createClusters",
     value: function _createClusters() {
@@ -997,6 +1296,13 @@ function () {
         cl.finalize();
       }
     }
+    /**
+     * add marker to the closest cluster if it is within cluster's grid. If not, create new one.
+     * @param {longdo.Marker} marker marker to be added
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
+
   }, {
     key: "_addToClosestCluster",
     value: function _addToClosestCluster(marker) {
@@ -1028,6 +1334,13 @@ function () {
         this._clusters.push(_cluster);
       }
     }
+    /**
+     * add marker to clusters in charge of its tile
+     * @param {longdo.Marker} marker marker to be added
+     * @returns {undefined}
+     * @memberof MarkerCluster
+     */
+
   }, {
     key: "_addToTiledCluster",
     value: function _addToTiledCluster(marker) {
@@ -1126,6 +1439,12 @@ function () {
 
       this._markers = [];
     }
+    /**
+     * remove clusters & markers from the map, then clear clusters
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
+
   }, {
     key: "resetViewport",
     value: function resetViewport() {

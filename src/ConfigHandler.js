@@ -1,3 +1,8 @@
+/**
+ * class for carrying config/option values
+ * @export ConfigHandler
+ * @class ConfigHandler
+ */
 export default class {
     constructor(options){
         this.maxZoom = options.maxZoom || null;

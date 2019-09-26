@@ -1,3 +1,4 @@
+/** @module MarkerCluster*/
 if(typeof window.longdo === 'undefined'){
     throw new Error('longdo API must be loaded before the longdomap markercluster plugin');
 }
@@ -6,8 +7,20 @@ import {LLBBox} from "./LLBBox";
 import Config from "./ConfigHandler";
 import {IconLoader} from './Icon';
 import Cluster from './Cluster';
+/**
+ * Class for MarkerCluster
+ *
+ * @export MarkerCluser
+ * @class MarkerCluster
+ */
 export default class MarkerCluster{
 
+    /**
+     *Creates an instance of MarkerCluster.
+     * @param {longdo.Map} map Longdo Map instance
+     * @param {Object} options Options for MarkerCluster
+     * @memberof MarkerCluster
+     */
     constructor(map, options){
         this._map = map;
         this._markers = [];
@@ -28,11 +41,6 @@ export default class MarkerCluster{
             if(!that._ready || !that._iloader.ready){return;}
             that.resetViewport();
             // that._createClusters();
-        });
-        this._map.Event.bind('idle',function() {
-            if(!that._ready || !that._iloader.ready){return;}
-            //that.resetViewport();
-            //that._createClusters();
         });
         this._map.Event.bind('drop',function() {
             if(!that._ready || !that._iloader.ready){return;}
@@ -66,6 +74,12 @@ export default class MarkerCluster{
         });
     }
 
+    /**
+     * add marker(s) to plugins's management
+     * @param {longdo.Marker| Array<longdo.Marker>} markers marker(s) to add
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
     addMarkers(markers){
         if(markers instanceof longdo.Marker){
             markers = [markers];
@@ -79,6 +93,11 @@ export default class MarkerCluster{
             this.shuffle();
         }
     }
+    /**
+     * randomize elements order in {@link MarkerCluster._markers}
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
     shuffle(){
         for(let i = this._markers.length-1;i > 0; i--){
             const r = Math.floor(Math.random()*(i+1));
@@ -87,6 +106,11 @@ export default class MarkerCluster{
             this._markers[r] = temp;
         }
     }
+    /**
+     * start rendering if icons-loading finished
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
     render(){
         this._ready = true;
         if(this._iloader.ready){
@@ -94,6 +118,11 @@ export default class MarkerCluster{
             this._createClusters();
         }
     }
+    /**
+     * choose markers in Map bound & add to clusters
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
     _createClusters(){
         const mapBounds = LLBBox.generateFrom(this._map.bound());
         const bounds = mapBounds.extendSize(this.config.gridSize*Math.pow(2,-this._map.zoom()));
@@ -120,6 +149,12 @@ export default class MarkerCluster{
             cl.finalize();
         }
     }
+    /**
+     * add marker to the closest cluster if it is within cluster's grid. If not, create new one.
+     * @param {longdo.Marker} marker marker to be added
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
     _addToClosestCluster(marker){
         let distance = Number.POSITIVE_INFINITY;
         let clusterToAddTo = null;
@@ -144,6 +179,12 @@ export default class MarkerCluster{
         }
     }
 
+    /**
+     * add marker to clusters in charge of its tile
+     * @param {longdo.Marker} marker marker to be added
+     * @returns {undefined}
+     * @memberof MarkerCluster
+     */
     _addToTiledCluster(marker){
         const that = this;
         const locationToTile = function(loc){
@@ -213,6 +254,11 @@ export default class MarkerCluster{
         this._markers = [];
     }
 
+    /**
+     * remove clusters & markers from the map, then clear clusters
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
     resetViewport(){
         let len = this._clusters.length;
         while(len--){
