@@ -131,3 +131,6 @@ markercluster.render();
 |height|number|height of the image|
 |minThreshold|number|the minimum number of markers in each cluster to which apply the design|
 
+## Build the plugin
+
+If you'd like to build the plugin, you are required to install Node.js & webpack & more packages. When the install's done, run npm build script.
