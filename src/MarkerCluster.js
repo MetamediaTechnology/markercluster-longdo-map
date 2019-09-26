@@ -19,32 +19,28 @@ export default class MarkerCluster{
         
         const that = this;
         this._map.Event.bind('ready',function() {
-            if(!that._ready && !that._iloader.ready){return;}
+            if(!that._ready || !that._iloader.ready){return;}
             that._prevZoom = that._map.zoom;
             that.resetViewport();
             that._createClusters();
         });
         this._map.Event.bind('zoom', function (/*pivot*/){
-            if(!that._ready && !that._iloader.ready){return;}
-            const zoom = that._map.zoom();
-            if(that._prevZoom !== zoom){
-                that._prevZoom = zoom;
-                that.resetViewport();
-                that._createClusters();
-            }
+            if(!that._ready || !that._iloader.ready){return;}
+            that.resetViewport();
+            // that._createClusters();
         });
         this._map.Event.bind('idle',function() {
-            if(!that._ready && !that._iloader.ready){return;}
+            if(!that._ready || !that._iloader.ready){return;}
             //that.resetViewport();
             //that._createClusters();
         });
         this._map.Event.bind('drop',function() {
-            if(!that._ready && !that._iloader.ready){return;}
+            if(!that._ready || !that._iloader.ready){return;}
             that.resetViewport();
             that._createClusters();
         });
         this._map.Event.bind('overlayClick', function(overlay){
-            if(!that._ready && !that._iloader.ready){return;}
+            if(!that._ready || !that._iloader.ready){return;}
             let len = that._clusters.length;
             while(len--){
                 const cl = that._clusters[len];
@@ -55,13 +51,18 @@ export default class MarkerCluster{
                         l.push(cl._markers[len2].location());
                     }
                     that._map.bound(longdo.Util.locationBound(l));
-                    setTimeout(function(){
-                        that.resetViewport();
-                        that._createClusters();
-                    },0);
+                    // setTimeout(function(){
+                    //     that.resetViewport();
+                    //     that._createClusters();
+                    // },10);
                     return;
                 }
             }
+        });
+        this._map.Event.bind('loadTile', function(s){
+            if(s !== 'finish' || !that._ready || !that._iloader.ready){return;}
+            that.resetViewport();
+            that._createClusters();
         });
     }
 

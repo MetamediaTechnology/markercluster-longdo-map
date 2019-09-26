@@ -75,13 +75,13 @@ export class IconLoader{
         this._markerCluster = markercluster;
         this._config = config;
         this._images = new Map();
-        this.ready = false;
+        this.ready = true;
         this.useDefault = true;
         if(this._config.styles){
             this.loadStyles(this._config.styles);
         }
     }
-    load(url,width,height,minThreshold){
+    load(url,width,height,minThreshold,callback){
         this.ready = false;
         this.useDefault = false;
         const img = new Image(width,height);
@@ -94,6 +94,9 @@ export class IconLoader{
                 that._markerCluster.resetViewport();
                 that._markerCluster._createClusters();
             }
+            if(callback){
+                callback();
+            }
         };
         img.src = url;
         return this._images.keys.length - 1;
@@ -103,9 +106,10 @@ export class IconLoader{
         elm1.minThreshold < elm2.minThreshold ? 1 : elm1.minThreshold === elm2.minThreshold ?
          0 : -1); 
          let len = styles.length;
+         const that = this;
          while(len--){
              const style = styles[len];
-             this.load(style.url,style.width,style.height,style.minThreshold);
+             this.load(style.url,style.width,style.height,style.minThreshold,len === 0 ? ()=>(that.ready = true) : null);
          }
     }
     getIcon(index){
