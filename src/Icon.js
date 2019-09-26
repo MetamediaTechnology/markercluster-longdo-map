@@ -1,5 +1,18 @@
+/** @module Icon */
 const longdo = window.longdo;
+/**
+ * Class for managing cluster's icon & children markers' icons
+ * @export ClusterIcon
+ * @class ClusterIcon
+ */
 export class ClusterIcon{
+    /**
+     *Creates an instance of ClusterIcon.
+     * @param {Cluster} cluster cluster in charge of this
+     * @param {ConfigHandler} config config variables
+     * @param {IconLoader} iloader cluster icon carrier
+     * @memberof ClusterIcon
+     */
     constructor(cluster,config,iloader){
         this._cluster = cluster;
         this._config = config;
@@ -13,6 +26,11 @@ export class ClusterIcon{
         });
     }
 
+    /**
+     * show cluster icons & marker icons if needed
+     * @returns {undefined}
+     * @memberof ClusterIcon
+     */
     show(){
         if(!this._config.swarmModeEnabled){
             const pos = this._center;
@@ -50,6 +68,11 @@ export class ClusterIcon{
             }
         }
     }
+    /**
+     * remove cluster icon from the map
+     * @memberof ClusterIcon
+     * @returns {undefined}
+     */
     remove(){
         this._map.Overlays.remove(this._clusterMarker);
         if(this._poly){
@@ -57,9 +80,21 @@ export class ClusterIcon{
             this._poly = null;
         }
     }
+    /**
+     * set position where cluster icon will be rendered
+     * @param {longdo.Location} center position for cluster icon to be rendered
+     * @memberof ClusterIcon
+     * @returns {undefined}
+     */
     setCenter(center){
         this._center = center;
     }
+    /**
+     * set number displaying in cluster
+     * @param {number} sums numbers to change to
+     * @returns {undefined}
+     * @memberof ClusterIcon
+     */
     setSums(sums){
         if(this._sums && sums === this._sums){return;}
         this._sums = sums;
@@ -69,8 +104,19 @@ export class ClusterIcon{
     }
 }
 
+/**
+ * class for loading cluser icons & carrying them
+ * @export IconLoader
+ * @class IconLoader
+ */
 export class IconLoader{
 
+    /**
+     *Creates an instance of IconLoader.
+     * @param {MarkerCluster} markercluster MarkerCluster instance
+     * @param {ConfigHandler} config config variables
+     * @memberof IconLoader
+     */
     constructor(markercluster,config){
         this._markerCluster = markercluster;
         this._config = config;
@@ -81,6 +127,16 @@ export class IconLoader{
             this.loadStyles(this._config.styles);
         }
     }
+    /**
+     * load style of icons
+     * @param {string} url url of icon image
+     * @param {number} width width of the image
+     * @param {number} height height of the image
+     * @param {number} minThreshold minimum threshold of size of cluster
+     * @param {Function} [callback] callback function to be called on finishing loading
+     * @returns {number} index of loaded style
+     * @memberof IconLoader
+     */
     load(url,width,height,minThreshold,callback){
         this.ready = false;
         this.useDefault = false;
@@ -101,6 +157,12 @@ export class IconLoader{
         img.src = url;
         return this._images.keys.length - 1;
     }
+    /**
+     * load styles config value
+     * @param {Array<Object>} styles styles to be loaded
+     * @memberof IconLoader
+     * @returns {undefined}
+     */
     loadStyles(styles){
         styles.sort((elm1,elm2) => 
         elm1.minThreshold < elm2.minThreshold ? 1 : elm1.minThreshold === elm2.minThreshold ?
@@ -112,6 +174,12 @@ export class IconLoader{
              this.load(style.url,style.width,style.height,style.minThreshold,len === 0 ? ()=>(that.ready = true) : null);
          }
     }
+    /**
+     * returns icon config object according to longdo Marker icon syntax
+     * @param {number} index index number to get icon style
+     * @returns {Object} icon config values object 
+     * @memberof IconLoader
+     */
     getIcon(index){
         const result = {"offset": { "x": 0, "y": 0}};
         if(this.useDefault || typeof index === 'undefined'){
@@ -145,6 +213,13 @@ export class IconLoader{
         }
         return result;
     }
+    /**
+     * change displaying number in cluster
+     * @param {HTMLElement} element element of cluster needing to be made changes
+     * @param {number} num number to change to 
+     * @memberof IconLoader
+     * @returns {undefined}
+     */
     changeNumber(element,num){
         if(this.useDefault){
             element.children[0].children[0].children[0].innerText = `${num}`;
@@ -175,5 +250,4 @@ export class IconLoader{
             }
         }
     }
-    
 }
