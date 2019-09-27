@@ -14,5 +14,10 @@ export default class {
         this.swarmModeEnabled = options.swarmModeEnabled;
         this.swarmAlg = options.swarmAlg ? parseInt(options.swarmAlg,10) : null;
         this.styles = options.styles || null;
+        this.swarmGridLength = options.swarmGridLength ? parseInt(options.swarmGridLength,10) : null;
+        this.swarmMarkersMaxLimit = options.swarmMarkersMaxLimit ? parseInt(options.swarmMarkersMaxLimit,10) : null;
+        this.swarmMarkersAmountAdjust = options.swarmMarkersAmountAdjust;
+        this.swarmMarkersMaxAmountPerTile = options.swarmMarkersMaxAmountPerTile ? parseInt(options.swarmMarkersMaxAmountPerTile,10) : null;
+        this.swarmMarkersConstPerGrid = options.swarmMarkersConstPerGrid ? parseInt(options.swarmMarkersConstPerGrid,10) : null;
     }
 }

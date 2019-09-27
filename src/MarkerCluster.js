@@ -89,12 +89,13 @@ export default class MarkerCluster{
             const m = markers[len];
             this._markers.push(m);
         }
-        if(this.config.swarmModeEnabled && this.config.swarmAlg === 1){
+        if(this.config.swarmModeEnabled){
             this.shuffle();
         }
     }
     /**
      * randomize elements order in {@link MarkerCluster._markers}
+     * using Fisher-Yates Algorithm
      * @memberof MarkerCluster
      * @returns {undefined}
      */
@@ -172,10 +173,20 @@ export default class MarkerCluster{
         }
         if(clusterToAddTo && clusterToAddTo.isMarkerInClusterBounds(marker)){
             clusterToAddTo.addMarker(marker);
+            if(this._maxClusterSize && this._maxClusterSize < clusterToAddTo._markers.length){
+                this._maxClusterSize = clusterToAddTo._markers.length;
+            }else{
+                this._maxClusterSize = clusterToAddTo._markers.length;
+            }
         }else{
             const cluster = new Cluster(this,this.config,this._iloader);
             cluster.addMarker(marker);
             this._clusters.push(cluster);
+            if(this._maxClusterSize && this._maxClusterSize < cluster._markers.length){
+                this._maxClusterSize = cluster._markers.length;
+            }else{
+                this._maxClusterSize = cluster._markers.length;
+            }
         }
     }
 
