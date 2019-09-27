@@ -47,8 +47,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	border-radius: 20px;
 	}
 .marker-cluster div {
-	width: 30px;
-	height: 30px;
+	width: 34px;
+	height: 34px;
 	margin-left: 5px;
 	margin-top: 5px;
 
@@ -57,5 +57,5 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
 	}
 .marker-cluster span {
-	line-height: 30px;
+	line-height: 34px;
 	}

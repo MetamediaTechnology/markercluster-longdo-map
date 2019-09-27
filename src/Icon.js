@@ -240,14 +240,14 @@ export class IconLoader{
             const elm3 = document.createElement('span');
             elm.appendChild(elm2);
             elm2.appendChild(elm3);
-            elm.style.width = '40px';
-            elm.style.height = '40px';
-            elm.style.marginLeft = '-20px';
-            elm.style.marginTop = '-20px';
+            elm.style.width = '44px';
+            elm.style.height = '44px';
+            elm.style.marginLeft = '-22px';
+            elm.style.marginTop = '-22px';
             elm.style.overflow = 'hidden';
             elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
             result.html = elm.outerHTML;
-            result.size = {"width":40,"height":40};
+            result.size = {"width":44,"height":44};
         }else{
             const img = [...this._images.keys()][index];
             const elm = document.createElement("div");
