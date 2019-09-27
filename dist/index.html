@@ -27,34 +27,6 @@
 <script type="text/javascript">
 	var map;
 	var markercluster;
-	var img;
-	var markers = [];
-	var styles = [{
-		url: "./m4.png",
-		width: 77,
-		height: 77,
-		minThreshold: 60
-	},{
-		url: "./m5.png",
-		width: 89,
-		height: 89,
-		minThreshold:100
-	},{
-		url: "./m2.png",
-		width: 55,
-		height: 55,
-		minThreshold:10
-	},{
-		url: "./m3.png",
-		width: 65,
-		height: 65,
-		minThreshold:30
-	},{
-		url: "./m1.png",
-		width: 52,
-		height: 52,
-		minThreshold:0
-	}];
 	function init() {
 		map = new longdo.Map({
 			placeholder: document.getElementById('map'),
@@ -64,44 +36,18 @@
 		{
 			minClusterSize:2,
 			drawMarkerArea: false,
-			swarmModeEnabled: false,
-			styles:styles,
+			swarmModeEnabled: true,
 			swarmAlg: 2,
-			averageCenter: false
+			gridSize: 120,
+			averageCenter: false,
+			swarmGridLength: 4,
+			swarmMarkersMaxLimit: 20,
+			swarmMarkersAmountAdjust: true,
+			swarmMarkersMaxAmountPerTile: 64,
+			swarmMarkersConstPerGrid: 8
 		});
 		img = new Image();
 		img.onload = function() {
-			
-			// $.getJSON('https://search.longdo.com/mapsearch/json/search?key=171082bb9618aa7b985baa7098d6bdce&callback=?',
-			// {
-			// 	tag:'7-11',
-			// 	locale:'en',
-			// 	limit: 1000,
-			// 	lat: map.location().lat,
-			// 	lon: map.location().lon,
-			// 	span: '100km'
-			// },
-			// function(data){
-			// 	var len = data.data.length;
-			// 	while(len--){
-			// 		var d = data.data[len];
-			// 		// if(!d.verified){
-			// 		// 	continue;
-			// 		// }
-			// 		markercluster.addMarkers(new longdo.Marker({lat:d.lat,lon:d.lon},
-			// 		{
-			// 			icon:{
-			// 				url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
-			// 				offset: { x: 12, y: 45 },
-			// 				size: {width: 24, height: 45}
-			// 			}
-			// 		}));
-			// 		// map.Overlays.add(new longdo.Marker({lat:d.lat,lon:d.lon}));
-			// 	}
-			// 	markercluster.render();
-			// });
-			
-			
 			// var len = data.photos.length;
 			// while(len--){
 			// 	var d = data.photos[len];
@@ -114,37 +60,37 @@
 			// 	}));
 			// }
 
-			var limit = 65000, loc = map.location();
-			while(limit--){
-				var lat = 13.755146+(Math.random()-0.5)*10, lon = 100.549577+(Math.random()-0.5)*10;
-				markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
-					icon:{
-							url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
-							offset: { x: 12, y: 45 },
-							size: {width: 24, height: 45}
-						}
-				}));
-				// map.Overlays.add(new longdo.Marker({lat:lat,lon:lon}));
-			}
-			markercluster.render();
-
-			// $.get('./FamilyRestaurant.csv',function(data){
-			// 	var csv = $.csv.toArrays(data);
-			// 	$(csv).each(function(){
-			// 		if(this.length > 0){
-			// 			var lat = parseFloat(this[1]);
-			// 			var lon = parseFloat(this[0]);
-			// 			markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
-			// 				icon:{
-			// 						url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
-			// 						offset: { x: 12, y: 45 },
-			// 						size: {width: 24, height: 45}
-			// 					}
-			// 			}));
-			// 		}
-			// 	})
-			// },'text');
+			// var limit = 650, loc = map.location();
+			// while(limit--){
+			// 	var lat = 13.755146+(Math.random()-0.5)*10, lon = 100.549577+(Math.random()-0.5)*10;
+			// 	markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
+			// 		icon:{
+			// 				url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
+			// 				offset: { x: 12, y: 45 },
+			// 				size: {width: 24, height: 45}
+			// 			}
+			// 	}));
+			// 	// map.Overlays.add(new longdo.Marker({lat:lat,lon:lon}));
+			// }
 			// markercluster.render();
+
+			$.get('./FamilyRestaurant.csv',function(data){
+				var csv = $.csv.toArrays(data);
+				$(csv).each(function(){
+					if(this.length > 0){
+						var lat = parseFloat(this[1]);
+						var lon = parseFloat(this[0]);
+						markercluster.addMarkers(new longdo.Marker({lat: lat,lon:lon},{
+							icon:{
+									url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
+									offset: { x: 12, y: 45 },
+									size: {width: 24, height: 45}
+								}
+						}));
+					}
+				})
+			},'text');
+			markercluster.render();
 			// map.Layers.add(new longdo.Layer('test',{type:longdo.LayerType.Custom, url: function (projection,tile,zoom){
 	  		// return 'https://usermap.longdo.com/klong/gadget/tile.php?x='+tile.u+'&y='+tile.v+'&z='+zoom;}}));
 		};

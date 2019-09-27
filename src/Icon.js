@@ -32,6 +32,7 @@ export class ClusterIcon{
      * @memberof ClusterIcon
      */
     show(){
+        let len = this._cluster._markers.length;
         if(!this._config.swarmModeEnabled){
             const pos = this._center;
             if (this._cluster._markers.length < this._config.minClusterSize){
@@ -44,7 +45,6 @@ export class ClusterIcon{
             const zoom = this._map.zoom();
             const mz = this._config.maxZoom;
             if(mz && zoom > mz || zoom === 20){
-                let len = this._cluster._markers.length;
                 while(len--){
                     const marker = this._markers[len];
                     if(!marker.active()){
@@ -66,7 +66,59 @@ export class ClusterIcon{
                     this._map.Overlays.add(this._poly);
                 }
             }
+        }else if(this._config.swarmAlg === 1){
+            //TODO
+            const amounts = new Array(this._config.swarmGridLength*this._config.swarmGridLength).fill(0);
+            let sum = 0;
+            while(len--){
+                if(sum >= this._config.swarmMarkersMaxAmountPerTile){
+                    break;
+                }
+                const m = this._cluster._markers[len];
+                const tile = this._cluster._gridids[len];
+                const idx = tile.u * this._config.swarmGridLength + tile.v;
+                if(amounts[idx] % this._config.swarmMarkersConstPerGrid === 0){
+                    if(!m.active()){
+                        this._map.Overlays.add(m);
+                    }
+                    sum++;
+                }
+                amounts[idx]++;
+            }
+        }else if(this._config.swarmAlg === 2){
+            this._calculateMarkersDispAmount();
+            let amount = 0;
+            while(len--){
+                if(amount > this._config.swarmMarkersMaxLimit){
+                    break;
+                }
+                const m = this._cluster._markers[len];
+                if(this.swarmAlg2Decider(amount,this._cluster._markers.length-len-1)){
+                    if(!m.active()){
+                        this._map.Overlays.add(m);
+                    }
+                    amount++;
+                }
+            }
+            return;
         }
+    }
+    _calculateMarkersDispAmount(){
+        const modsig = function(n,inmax,outmax){
+            if(n === 0){
+                return 0;
+            }
+            const z = n / inmax * 49 - 13;
+            const result = Math.round(outmax*(1 / (1 + Math.exp(-z))));
+            return result === 0 ? 1 : result;
+        };
+        this._maxDispAmount = modsig(this._cluster._markers.length,this._cluster._markerCluster._maxClusterSize,this._config.swarmMarkersMaxLimit);
+    }
+    swarmAlg2Decider(amount,num){
+        if(this._config.swarmMarkersAmountAdjust){
+            return this._maxDispAmount > amount;
+        }
+        return amount <= 5 || num % 10 === 0;
     }
     /**
      * remove cluster icon from the map

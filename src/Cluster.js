@@ -47,45 +47,13 @@ export default class{
         if(this._config.drawMarkerArea){
             this._bounds.drawArea(this._map);
         }
-
         if(this._config.swarmModeEnabled && this._config.swarmAlg === 1){
-            //TODO
             if(!this._gridids){
                 this._gridids = [];
             }
             this._gridids.push(LLBBox.generateFrom(
                 longdo.Util.boundOfTile(longdo.Projections.EPSG3857,tile)
-            ).getNxNGridCord(marker.location(),4));
-
-            
-            if(!this._markersToShow){
-                this._markersToShow = [marker];
-            }else if(this._markersToShow.length <= 64){
-                let markersInSameGrid = 0;
-                const that = this;
-                this._gridids.forEach(function(value){
-                    const gridid = that._gridids[that._gridids.length-1];
-                    markersInSameGrid += gridid.u === value.u && gridid.v === value.v ? 1 : 0;
-                });
-
-                if(markersInSameGrid % 8 !== 0){
-                    return true;
-                }
-                this._markersToShow.push(marker);
-            }else{
-                return true;
-            }
-            if(!marker.active()){
-                this._map.Overlays.add(marker);
-            }
-            return true;
-        }else if(this._config.swarmModeEnabled && this._config.swarmAlg === 2){
-            if(this._markers.length < 11 || this._markers.length % 10 === 0){
-                if(!marker.active()){
-                    this._map.Overlays.add(marker);
-                }
-            }
-            return true;
+            ).getNxNGridCord(marker.location(),this._config.swarmGridSize));
         }
         return true;
     }

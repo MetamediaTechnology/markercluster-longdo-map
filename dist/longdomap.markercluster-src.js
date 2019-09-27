@@ -166,46 +166,11 @@ function () {
       }
 
       if (this._config.swarmModeEnabled && this._config.swarmAlg === 1) {
-        //TODO
         if (!this._gridids) {
           this._gridids = [];
         }
 
-        this._gridids.push(_LLBBox__WEBPACK_IMPORTED_MODULE_1__["LLBBox"].generateFrom(longdo.Util.boundOfTile(longdo.Projections.EPSG3857, tile)).getNxNGridCord(marker.location(), 4));
-
-        if (!this._markersToShow) {
-          this._markersToShow = [marker];
-        } else if (this._markersToShow.length <= 64) {
-          var markersInSameGrid = 0;
-          var that = this;
-
-          this._gridids.forEach(function (value) {
-            var gridid = that._gridids[that._gridids.length - 1];
-            markersInSameGrid += gridid.u === value.u && gridid.v === value.v ? 1 : 0;
-          });
-
-          if (markersInSameGrid % 8 !== 0) {
-            return true;
-          }
-
-          this._markersToShow.push(marker);
-        } else {
-          return true;
-        }
-
-        if (!marker.active()) {
-          this._map.Overlays.add(marker);
-        }
-
-        return true;
-      } else if (this._config.swarmModeEnabled && this._config.swarmAlg === 2) {
-        if (this._markers.length < 11 || this._markers.length % 10 === 0) {
-          if (!marker.active()) {
-            this._map.Overlays.add(marker);
-          }
-        }
-
-        return true;
+        this._gridids.push(_LLBBox__WEBPACK_IMPORTED_MODULE_1__["LLBBox"].generateFrom(longdo.Util.boundOfTile(longdo.Projections.EPSG3857, tile)).getNxNGridCord(marker.location(), this._config.swarmGridSize));
       }
 
       return true;
@@ -298,6 +263,11 @@ var _default = function _default(options) {
   this.swarmModeEnabled = options.swarmModeEnabled;
   this.swarmAlg = options.swarmAlg ? parseInt(options.swarmAlg, 10) : null;
   this.styles = options.styles || null;
+  this.swarmGridLength = options.swarmGridLength ? parseInt(options.swarmGridLength, 10) : null;
+  this.swarmMarkersMaxLimit = options.swarmMarkersMaxLimit ? parseInt(options.swarmMarkersMaxLimit, 10) : null;
+  this.swarmMarkersAmountAdjust = options.swarmMarkersAmountAdjust;
+  this.swarmMarkersMaxAmountPerTile = options.swarmMarkersMaxAmountPerTile ? parseInt(options.swarmMarkersMaxAmountPerTile, 10) : null;
+  this.swarmMarkersConstPerGrid = options.swarmMarkersConstPerGrid ? parseInt(options.swarmMarkersConstPerGrid, 10) : null;
 };
 
 
@@ -374,6 +344,8 @@ function () {
   _createClass(ClusterIcon, [{
     key: "show",
     value: function show() {
+      var len = this._cluster._markers.length;
+
       if (!this._config.swarmModeEnabled) {
         var pos = this._center;
 
@@ -392,8 +364,6 @@ function () {
         var mz = this._config.maxZoom;
 
         if (mz && zoom > mz || zoom === 20) {
-          var len = this._cluster._markers.length;
-
           while (len--) {
             var _marker = this._markers[len];
 
@@ -424,7 +394,77 @@ function () {
             this._map.Overlays.add(this._poly);
           }
         }
+      } else if (this._config.swarmAlg === 1) {
+        //TODO
+        var amounts = new Array(this._config.swarmGridLength * this._config.swarmGridLength).fill(0);
+        var sum = 0;
+
+        while (len--) {
+          if (sum >= this._config.swarmMarkersMaxAmountPerTile) {
+            break;
+          }
+
+          var m = this._cluster._markers[len];
+          var tile = this._cluster._gridids[len];
+          var idx = tile.u * this._config.swarmGridLength + tile.v;
+
+          if (amounts[idx] % this._config.swarmMarkersConstPerGrid === 0) {
+            if (!m.active()) {
+              this._map.Overlays.add(m);
+            }
+
+            sum++;
+          }
+
+          amounts[idx]++;
+        }
+      } else if (this._config.swarmAlg === 2) {
+        this._calculateMarkersDispAmount();
+
+        var amount = 0;
+
+        while (len--) {
+          if (amount > this._config.swarmMarkersMaxLimit) {
+            break;
+          }
+
+          var _m = this._cluster._markers[len];
+
+          if (this.swarmAlg2Decider(amount, this._cluster._markers.length - len - 1)) {
+            if (!_m.active()) {
+              this._map.Overlays.add(_m);
+            }
+
+            amount++;
+          }
+        }
+
+        return;
       }
+    }
+  }, {
+    key: "_calculateMarkersDispAmount",
+    value: function _calculateMarkersDispAmount() {
+      var modsig = function modsig(n, inmax, outmax) {
+        if (n === 0) {
+          return 0;
+        }
+
+        var z = n / inmax * 49 - 13;
+        var result = Math.round(outmax * (1 / (1 + Math.exp(-z))));
+        return result === 0 ? 1 : result;
+      };
+
+      this._maxDispAmount = modsig(this._cluster._markers.length, this._cluster._markerCluster._maxClusterSize, this._config.swarmMarkersMaxLimit);
+    }
+  }, {
+    key: "swarmAlg2Decider",
+    value: function swarmAlg2Decider(amount, num) {
+      if (this._config.swarmMarkersAmountAdjust) {
+        return this._maxDispAmount > amount;
+      }
+
+      return amount <= 5 || num % 10 === 0;
     }
     /**
      * remove cluster icon from the map
@@ -1222,12 +1262,13 @@ function () {
         this._markers.push(m);
       }
 
-      if (this.config.swarmModeEnabled && this.config.swarmAlg === 1) {
+      if (this.config.swarmModeEnabled) {
         this.shuffle();
       }
     }
     /**
      * randomize elements order in {@link MarkerCluster._markers}
+     * using Fisher-Yates Algorithm
      * @memberof MarkerCluster
      * @returns {undefined}
      */
@@ -1326,12 +1367,24 @@ function () {
 
       if (clusterToAddTo && clusterToAddTo.isMarkerInClusterBounds(marker)) {
         clusterToAddTo.addMarker(marker);
+
+        if (this._maxClusterSize && this._maxClusterSize < clusterToAddTo._markers.length) {
+          this._maxClusterSize = clusterToAddTo._markers.length;
+        } else {
+          this._maxClusterSize = clusterToAddTo._markers.length;
+        }
       } else {
         var _cluster = new _Cluster__WEBPACK_IMPORTED_MODULE_3__["default"](this, this.config, this._iloader);
 
         _cluster.addMarker(marker);
 
         this._clusters.push(_cluster);
+
+        if (this._maxClusterSize && this._maxClusterSize < _cluster._markers.length) {
+          this._maxClusterSize = _cluster._markers.length;
+        } else {
+          this._maxClusterSize = _cluster._markers.length;
+        }
       }
     }
     /**
