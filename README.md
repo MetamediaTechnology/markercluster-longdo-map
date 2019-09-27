@@ -4,7 +4,9 @@
 markercluster plugin for Longdo Map
 
 ## Demo
-preparing...
+
+* [Demo1(sample)](https://metamediatechnology.github.io/longdo-map-markercluster/demo.html)
+* [Demo2(65000 randomly generated locations)](https://metamediatechnology.github.io/longdo-map-markercluster/demo65000.html)
 
 ## Reference
 This plugin originates from [Markerclusterer for Google Map V3](https://github.com/googlemaps/v3-utility-library/tree/master/markerclusterer) & [Leaflet.Markercluster](https://github.com/Leaflet/Leaflet.markercluster).
@@ -121,7 +123,12 @@ markercluster.render();
 |minClusterSize|number|2|the minimum number of markers in each cluster|
 |styles|Array\<Object\>|null|design of cluster icons|
 |swarmModeEnabled|boolean|false|Whether swarm mode is enabled(under development)|
-|swarmAlg|number|null|swarming algorithm 1 or 2|
+|swarmAlg|number|null|null|swarming algorithm 1 or 2|
+|swarmGridLength|number|null|length of grid in swam mode 1|
+|swarmMarkersMaxLimit|number|null|Maxmimum number of showing markers in each cluster in swarm mode|
+|swarmMarkersAmountAdjust|boolean|false|if true, dynamic MaxLimit below is enabled in swarm mode 2|
+|swarmMarkersMaxAmountPerTile|number|null|Maximum number of markers to show in swarm mode|
+|swarmMarkersConstPerGrid|number|null|number per markers in grid to show in swarm mode 1|
 
 #### cluster styles
 |Name|Type|Description|
