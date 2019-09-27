@@ -6,7 +6,9 @@ markercluster plugin for Longdo Map
 ## Demo
 
 * [Demo1(sample)](https://metamediatechnology.github.io/longdo-map-markercluster/demo.html)
-* [Demo2(65000 randomly generated locations)](https://metamediatechnology.github.io/longdo-map-markercluster/demo65000.html)
+* [Demo2(Restaurants(data provided from Longdo))](https://metamediatechnology.github.io/longdo-map-markercluster/demo2.html)
+* [Demo3(style-changable)](https://metamediatechnology.github.io/longdo-map-markercluster/demo3.html)
+* [Demo65000(randomy generated 65000 locations)](https://metamediatechnology.github.io/longdo-map-markercluster/demo65000.html)
 
 ## Reference
 This plugin originates from [Markerclusterer for Google Map V3](https://github.com/googlemaps/v3-utility-library/tree/master/markerclusterer) & [Leaflet.Markercluster](https://github.com/Leaflet/Leaflet.markercluster).
