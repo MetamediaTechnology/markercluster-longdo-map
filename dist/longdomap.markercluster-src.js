@@ -686,17 +686,17 @@ function () {
     key: "changeNumber",
     value: function changeNumber(element, num) {
       if (this.useDefault) {
-        element.children[0].children[0].children[0].innerText = "".concat(num);
+        element.children[0].children[0].children[0].innerText = "".concat(num.toLocaleString());
 
         if (num < 10) {
-          element.children[0].className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
+          element.children[0].className = 'marker-cluster marker-cluster-small';
         } else if (num < 100) {
-          element.children[0].className = 'marker-cluster marker-cluster-medium leaflet-marker-icon';
+          element.children[0].className = 'marker-cluster marker-cluster-medium';
         } else {
-          element.children[0].className = 'marker-cluster marker-cluster-large leaflet-marker-icon';
+          element.children[0].className = 'marker-cluster marker-cluster-large';
         }
       } else {
-        element.children[0].innerText = "".concat(num);
+        element.children[0].innerText = "".concat(num.toLocaleString());
 
         var list = _toConsumableArray(this._images.keys());
 

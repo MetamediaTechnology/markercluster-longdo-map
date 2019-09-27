@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="csvjson.json"></script>
+	<script src="https://api.longdo.com/map/?key=171082bb9618aa7b985baa7098d6bdce"></script>
+	<link rel="stylesheet" href="./MarkerCluster.Default.css">
+	<script type="text/javascript" src="longdomap.markercluster-src.js"></script>
+	<title>MarkerCluster Demo(Restaurants)</title>
+	<style type="text/css">
+          html{
+            height:100%;
+          }
+          body{
+            margin:0px;
+            height:100%;
+          }
+          #map {
+            height: 100%;
+            width: 100%;
+          }
+        </style>
+</head>
+<body onload="init();">
+<div id="map"></div>
+<script type="text/javascript">
+	var map;
+	var markercluster;
+	var img;
+	function init() {
+		map = new longdo.Map({
+			placeholder: document.getElementById('map'),
+			language: 'en',
+			location: {lat:13.689128, lon:100.491781}
+		});
+		markercluster = new lmc.MarkerCluster(map,
+		{
+			minClusterSize: 2
+		});
+		img = new Image();
+		img.onload = function() {
+			var len = data.length;
+			while(len--){
+				var d = data[len];
+				markercluster.addMarkers(new longdo.Marker({lat:d.lat,lon:d.lon},{
+					icon:{
+							url: 'https://map.longdo.com/mmmap/images/pin_mark.png',
+							offset: { x: 12, y: 45 },
+							size: {width: 24, height: 45}
+						}
+				}));
+			}
+			markercluster.render();
+		};
+		img.src = 'https://map.longdo.com/mmmap/images/pin_mark.png';
+	}
+</script>
+</body>
+</html>

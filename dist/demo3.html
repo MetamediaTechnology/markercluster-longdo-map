@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>MarkerClusterer Demo</title>
+    <script type="text/javascript" src="data.json"></script>
+    <script src="https://api.longdo.com/map/?key=171082bb9618aa7b985baa7098d6bdce"></script>
+    <link rel="stylesheet" href="./MarkerCluster.Default.css">
+    <script type="text/javascript" src="longdomap.markercluster-src.js"></script>
+    <title>MarkerCluster Demo</title>
+    <style type="text/css">
+        html{
+            height:100%;
+        }
+        body{
+            margin:0px;
+            height:100%;
+        }
+        #map {
+            height: 90%;
+            width: 100%;
+        }
+        #actions {
+            list-style: none;
+            padding: 0;
+        }
+        #inline-actions {
+            padding-top: 10px;
+        }
+        .item {
+            margin-left: 20px;
+        }
+    </style>
+    <script type="text/javascript">
+        var markercluster = null;
+        var map = null;
+        var stylepreset = [{
+            url: "./m4.png",
+            width: 77,
+            height: 77,
+            minThreshold: 60
+        },{
+            url: "./m5.png",
+            width: 89,
+            height: 89,
+            minThreshold:100
+        },{
+            url: "./m2.png",
+            width: 55,
+            height: 55,
+            minThreshold:10
+        },{
+            url: "./m3.png",
+            width: 65,
+            height: 65,
+            minThreshold:30
+        },{
+            url: "./m1.png",
+            width: 52,
+            height: 52,
+            minThreshold:0
+        }];
+
+        function refreshMap() {
+            if (markercluster) {
+                markercluster.clearMarkers();
+            }
+
+        var markers = [];
+
+        var len = data.photos.length;
+        while(len--){
+            var d = data.photos[len];
+            markers.push(new longdo.Marker({lat:d.latitude,lon:d.longitude},{}));
+        }
+        var style = parseInt(document.getElementById('style').value, 10);
+        style = style == -1 ? null: stylepreset;
+
+        markercluster = new lmc.MarkerCluster(map,
+        {
+            minClusterSize: 2,
+            styles: style
+        });
+            markercluster.addMarkers(markers);
+            markercluster.render();
+
+        }
+
+        function initialize() {
+            map = new longdo.Map({
+                placeholder: document.getElementById('map'),
+                language: 'en',
+                location: {lat:13.689128, lon:100.491781},
+                lastView: false
+            });
+
+            var refresh = document.getElementById('refresh');
+            refresh.onclick = refreshMap;
+
+            refreshMap();
+        }
+
+        function clearClusters(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            markerClusterer.clearMarkers();
+        }
+    </script>
+</head>
+<body onload="initialize();">
+    <div id="map"></div>
+        <div id="inline-actions">
+        <span class="item">Cluster style:
+        <select id="style">
+            <option value="-1">Default</option>
+            <option value="0">Style 1</option>
+        </select>
+        <input id="refresh" type="button" value="Refresh Map" class="item"/>
+    </div>
+</body>
+</html>

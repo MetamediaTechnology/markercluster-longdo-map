@@ -56,7 +56,8 @@
 		map = new longdo.Map({
 			placeholder: document.getElementById('map'),
 			language: 'en',
-			location: {lat:13.689128, lon:100.491781}
+			location: {lat:13.689128, lon:100.491781},
+			lastView: false
 		});
 		markercluster = new lmc.MarkerCluster(map,
 		{
