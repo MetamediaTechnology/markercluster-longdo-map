@@ -27,6 +27,7 @@ export default class MarkerCluster{
         this._clusters = [];
         this._prevZoom = 2;
         this._ready = false;
+        this.overlay = [];
         this.config = new Config(options);
         this._iloader = new IconLoader(this,this.config);
         
@@ -48,6 +49,7 @@ export default class MarkerCluster{
             that._createClusters();
         });
         this._map.Event.bind('overlayClick', function(overlay){
+            that.setSelectedMarker(overlay)
             if(!that._ready || !that._iloader.ready){return;}
             let len = that._clusters.length;
             while(len--){
@@ -107,6 +109,18 @@ export default class MarkerCluster{
             this._markers[r] = temp;
         }
     }
+    getSelectedMarker() {
+        if(this.overlay) {
+            return this.overlay;
+        }
+        return null
+    }
+    setSelectedMarker(_overlay) {
+        if(_overlay && _overlay.element() && _overlay.element().classList.contains('ldmap_clickable')) {
+            this.overlay = _overlay
+        }
+    }
+
     /**
      * start rendering if icons-loading finished
      * @memberof MarkerCluster

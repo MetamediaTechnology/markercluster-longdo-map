@@ -114,9 +114,7 @@ var longdo = window.longdo;
  * @class Cluster
  */
 
-var _default =
-/*#__PURE__*/
-function () {
+var _default = /*#__PURE__*/function () {
   /**
    * Creates an isntance of Cluster
    * @param {MarkerCluster} markerCluster MarkerCluster instance
@@ -285,13 +283,17 @@ var _default = function _default(options) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ClusterIcon", function() { return ClusterIcon; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IconLoader", function() { return IconLoader; });
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -307,9 +309,7 @@ var longdo = window.longdo;
  * @class ClusterIcon
  */
 
-var ClusterIcon =
-/*#__PURE__*/
-function () {
+var ClusterIcon = /*#__PURE__*/function () {
   /**
    *Creates an instance of ClusterIcon.
    * @param {Cluster} cluster cluster in charge of this
@@ -525,9 +525,7 @@ function () {
  * @class IconLoader
  */
 
-var IconLoader =
-/*#__PURE__*/
-function () {
+var IconLoader = /*#__PURE__*/function () {
   /**
    *Creates an instance of IconLoader.
    * @param {MarkerCluster} markercluster MarkerCluster instance
@@ -750,9 +748,7 @@ var longdo = window.longdo;
  * @class LLBBox
  */
 
-var LLBBox =
-/*#__PURE__*/
-function () {
+var LLBBox = /*#__PURE__*/function () {
   /**
    *Creates an instance of LLBBox.
    * @param {Array<longdo.Location>} locations array of locations to create bound
@@ -1148,9 +1144,7 @@ var longdo = window.longdo;
  * @class MarkerCluster
  */
 
-var MarkerCluster =
-/*#__PURE__*/
-function () {
+var MarkerCluster = /*#__PURE__*/function () {
   /**
    *Creates an instance of MarkerCluster.
    * @param {longdo.Map} map Longdo Map instance
@@ -1165,6 +1159,7 @@ function () {
     this._clusters = [];
     this._prevZoom = 2;
     this._ready = false;
+    this.overlay = [];
     this.config = new _ConfigHandler__WEBPACK_IMPORTED_MODULE_1__["default"](options);
     this._iloader = new _Icon__WEBPACK_IMPORTED_MODULE_2__["IconLoader"](this, this.config);
     var that = this;
@@ -1201,6 +1196,8 @@ function () {
     });
 
     this._map.Event.bind('overlayClick', function (overlay) {
+      that.setSelectedMarker(overlay);
+
       if (!that._ready || !that._iloader.ready) {
         return;
       }
@@ -1281,6 +1278,22 @@ function () {
         var temp = this._markers[i];
         this._markers[i] = this._markers[r];
         this._markers[r] = temp;
+      }
+    }
+  }, {
+    key: "getSelectedMarker",
+    value: function getSelectedMarker() {
+      if (this.overlay) {
+        return this.overlay;
+      }
+
+      return null;
+    }
+  }, {
+    key: "setSelectedMarker",
+    value: function setSelectedMarker(_overlay) {
+      if (_overlay && _overlay.element() && _overlay.element().classList.contains('ldmap_clickable')) {
+        this.overlay = _overlay;
       }
     }
     /**

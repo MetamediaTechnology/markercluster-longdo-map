@@ -45,6 +45,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .marker-cluster {
 	background-clip: padding-box;
 	border-radius: 20px;
+	cursor: pointer;
 	}
 .marker-cluster div {
 	width: 34px;
