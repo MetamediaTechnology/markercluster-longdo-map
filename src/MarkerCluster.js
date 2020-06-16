@@ -43,11 +43,11 @@ export default class MarkerCluster{
             that.resetViewport();
             // that._createClusters();
         });
-        this._map.Event.bind('drop',function() {
-            if(!that._ready || !that._iloader.ready){return;}
-            that.resetViewport();
-            that._createClusters();
-        });
+        // this._map.Event.bind('drop',function() {
+        //     if(!that._ready || !that._iloader.ready){return;}
+        //     that.resetViewport();
+        //     that._createClusters();
+        // });
         this._map.Event.bind('overlayClick', function(overlay){
             that.setSelectedMarker(overlay)
             if(!that._ready || !that._iloader.ready){return;}
@@ -70,7 +70,7 @@ export default class MarkerCluster{
             }
         });
         this._map.Event.bind('loadTile', function(s){
-            if(s !== 'finish' || !that._ready || !that._iloader.ready){return;}
+            if(s === 'start' || !that._ready || !that._iloader.ready){return;}
             that.resetViewport();
             that._createClusters();
         });
