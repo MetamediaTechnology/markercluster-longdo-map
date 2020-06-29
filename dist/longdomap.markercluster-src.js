@@ -333,6 +333,7 @@ var ClusterIcon = /*#__PURE__*/function () {
       "icon": this._cluster._markerCluster._iloader.getIcon(0),
       "weight": longdo.OverlayWeight.Top
     });
+    console.log(this._cluster._markerCluster._iloader.getIcon(0));
   }
   /**
    * show cluster icons & marker icons if needed
@@ -633,37 +634,55 @@ var IconLoader = /*#__PURE__*/function () {
       };
 
       if (this.useDefault || typeof index === 'undefined') {
-        var elm = document.createElement("div");
-        var elm2 = document.createElement('div');
-        var elm3 = document.createElement('span');
-        elm.appendChild(elm2);
-        elm2.appendChild(elm3);
-        elm.style.width = '44px';
-        elm.style.height = '44px';
-        elm.style.marginLeft = '-22px';
-        elm.style.marginTop = '-22px';
-        elm.style.overflow = 'hidden';
-        elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
-        result.html = elm.outerHTML;
+        // const elm = document.createElement("div");
+        // const elm2 = document.createElement('div');
+        // const elm3 = document.createElement('span');
+        // elm.appendChild(elm2);
+        // elm2.appendChild(elm3);
+        // elm.style.width = '44px';
+        // elm.style.height = '44px';
+        // elm.style.marginLeft = '-22px';
+        // elm.style.marginTop = '-22px';
+        // elm.style.overflow = 'hidden';
+        // elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
+        // result.html = elm.outerHTML;
+        // result.size = {"width":44,"height":44};
+        // console.log(elm)
+        var svg = document.createElement("svg");
+        svg.setAttribute("width", "44");
+        svg.setAttribute("height", "44");
+        var circle = document.createElement("circle");
+        circle.setAttribute("cx", "20");
+        circle.setAttribute("cy", "20");
+        circle.setAttribute("r", "40");
+        circle.setAttribute("stroke", "black");
+        circle.setAttribute("stroke-width", "3");
+        circle.setAttribute("fill", "red");
+        svg.appendChild(circle);
+        svg.setAttribute("xmlns", 'http://www.w3.org/2000/svg'); // var serializedSVG = new XMLSerializer().serializeToString(svg);
+        // console.log(serializedSVG)
+        // var base64Data = window.btoa(serializedSVG);
+        // result.html = svg.outerHTML
+
+        result.url = "data:image/svg+xml,".concat(svg.outerHTML);
         result.size = {
           "width": 44,
           "height": 44
-        };
+        }; // console.log(svg)
       } else {
         var img = _toConsumableArray(this._images.keys())[index];
 
-        var _elm = document.createElement("div");
-
-        _elm.style.width = "".concat(img.width, "px");
-        _elm.style.height = "".concat(img.height, "px");
-        _elm.style.marginLeft = "-".concat(img.width / 2, "px");
-        _elm.style.marginTop = "-".concat(img.height / 2, "px");
-        _elm.style.background = "url('".concat(encodeURI(img.src), "') no-repeat center top");
-        _elm.style.lineHeight = _elm.style.height;
-        _elm.style.color = 'black';
-        _elm.style.fontWeight = 'bold';
-        _elm.style.textAlign = 'center';
-        result.html = _elm.outerHTML;
+        var elm = document.createElement("div");
+        elm.style.width = "".concat(img.width, "px");
+        elm.style.height = "".concat(img.height, "px");
+        elm.style.marginLeft = "-".concat(img.width / 2, "px");
+        elm.style.marginTop = "-".concat(img.height / 2, "px");
+        elm.style.background = "url('".concat(encodeURI(img.src), "') no-repeat center top");
+        elm.style.lineHeight = elm.style.height;
+        elm.style.color = 'black';
+        elm.style.fontWeight = 'bold';
+        elm.style.textAlign = 'center';
+        result.html = elm.outerHTML;
         result.size = {
           "width": img.width,
           "height": img.height
@@ -683,16 +702,14 @@ var IconLoader = /*#__PURE__*/function () {
   }, {
     key: "changeNumber",
     value: function changeNumber(element, num) {
-      if (this.useDefault) {
-        element.children[0].children[0].children[0].innerText = "".concat(num.toLocaleString());
-
-        if (num < 10) {
-          element.children[0].className = 'marker-cluster marker-cluster-small';
-        } else if (num < 100) {
-          element.children[0].className = 'marker-cluster marker-cluster-medium';
-        } else {
-          element.children[0].className = 'marker-cluster marker-cluster-large';
-        }
+      if (this.useDefault) {// element.children[0].children[0].children[0].innerText = `${num.toLocaleString()}`;
+        // if(num < 10){
+        //     element.children[0].className = 'marker-cluster marker-cluster-small';
+        // }else if(num < 100){
+        //     element.children[0].className = 'marker-cluster marker-cluster-medium';
+        // }else{
+        //     element.children[0].className = 'marker-cluster marker-cluster-large';
+        // }
       } else {
         element.children[0].innerText = "".concat(num.toLocaleString());
 
@@ -1222,7 +1239,7 @@ var MarkerCluster = /*#__PURE__*/function () {
     });
 
     this._map.Event.bind('loadTile', function (s) {
-      if (s === 'start' || !that._ready || !that._iloader.ready) {
+      if (s !== 'finish' || !that._ready || !that._iloader.ready) {
         return;
       }
 

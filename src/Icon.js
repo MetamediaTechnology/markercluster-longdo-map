@@ -24,6 +24,7 @@ export class ClusterIcon{
             "icon": this._cluster._markerCluster._iloader.getIcon(0),
             "weight": longdo.OverlayWeight.Top
         });
+        console.log(this._cluster._markerCluster._iloader.getIcon(0));
     }
 
     /**
@@ -235,19 +236,40 @@ export class IconLoader{
     getIcon(index){
         const result = {"offset": { "x": 0, "y": 0}};
         if(this.useDefault || typeof index === 'undefined'){
-            const elm = document.createElement("div");
-            const elm2 = document.createElement('div');
-            const elm3 = document.createElement('span');
-            elm.appendChild(elm2);
-            elm2.appendChild(elm3);
-            elm.style.width = '44px';
-            elm.style.height = '44px';
-            elm.style.marginLeft = '-22px';
-            elm.style.marginTop = '-22px';
-            elm.style.overflow = 'hidden';
-            elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
-            result.html = elm.outerHTML;
+            // const elm = document.createElement("div");
+            // const elm2 = document.createElement('div');
+            // const elm3 = document.createElement('span');
+            // elm.appendChild(elm2);
+            // elm2.appendChild(elm3);
+            // elm.style.width = '44px';
+            // elm.style.height = '44px';
+            // elm.style.marginLeft = '-22px';
+            // elm.style.marginTop = '-22px';
+            // elm.style.overflow = 'hidden';
+            // elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
+            // result.html = elm.outerHTML;
+            // result.size = {"width":44,"height":44};
+            // console.log(elm)
+
+            const svg = document.createElement("svg")
+            svg.setAttribute("width","44");
+            svg.setAttribute("height","44");
+            const circle = document.createElement("circle")
+            circle.setAttribute("cx","20");
+            circle.setAttribute("cy","20");
+            circle.setAttribute("r","40");
+            circle.setAttribute("stroke","black");
+            circle.setAttribute("stroke-width","3");
+            circle.setAttribute("fill","red");
+            svg.appendChild(circle)
+            svg.setAttribute("xmlns",'http://www.w3.org/2000/svg')
+            // var serializedSVG = new XMLSerializer().serializeToString(svg);
+            // console.log(serializedSVG)
+            // var base64Data = window.btoa(serializedSVG);
+            // result.html = svg.outerHTML
+            result.url = `data:image/svg+xml,${svg.outerHTML}`;
             result.size = {"width":44,"height":44};
+            // console.log(svg)
         }else{
             const img = [...this._images.keys()][index];
             const elm = document.createElement("div");
@@ -274,14 +296,14 @@ export class IconLoader{
      */
     changeNumber(element,num){
         if(this.useDefault){
-            element.children[0].children[0].children[0].innerText = `${num.toLocaleString()}`;
-            if(num < 10){
-                element.children[0].className = 'marker-cluster marker-cluster-small';
-            }else if(num < 100){
-                element.children[0].className = 'marker-cluster marker-cluster-medium';
-            }else{
-                element.children[0].className = 'marker-cluster marker-cluster-large';
-            }
+            // element.children[0].children[0].children[0].innerText = `${num.toLocaleString()}`;
+            // if(num < 10){
+            //     element.children[0].className = 'marker-cluster marker-cluster-small';
+            // }else if(num < 100){
+            //     element.children[0].className = 'marker-cluster marker-cluster-medium';
+            // }else{
+            //     element.children[0].className = 'marker-cluster marker-cluster-large';
+            // }
         }else{
             element.children[0].innerText = `${num.toLocaleString()}`;
             const list = [...this._images.keys()];

@@ -70,7 +70,7 @@ export default class MarkerCluster{
             }
         });
         this._map.Event.bind('loadTile', function(s){
-            if(s === 'start' || !that._ready || !that._iloader.ready){return;}
+            if(s !== 'finish' || !that._ready || !that._iloader.ready){return;}
             that.resetViewport();
             that._createClusters();
         });
