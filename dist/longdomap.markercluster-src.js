@@ -365,7 +365,7 @@ var ClusterIcon = /*#__PURE__*/function () {
 
         if (mz && zoom > mz || zoom === 20) {
           while (len--) {
-            var _marker = this._markers[len];
+            var _marker = this._cluster._markers[len];
 
             if (!_marker.active()) {
               this._cluster._map.Overlays.add(_marker);
@@ -1182,13 +1182,20 @@ var MarkerCluster = /*#__PURE__*/function () {
         return;
       }
 
-      that.resetViewport(); // that._createClusters();
-    }); // this._map.Event.bind('drop',function() {
-    //     if(!that._ready || !that._iloader.ready){return;}
-    //     that.resetViewport();
-    //     that._createClusters();
-    // });
+      that.resetViewport();
 
+      that._createClusters();
+    });
+
+    this._map.Event.bind('drop', function () {
+      if (!that._ready || !that._iloader.ready) {
+        return;
+      }
+
+      that.resetViewport();
+
+      that._createClusters();
+    });
 
     this._map.Event.bind('overlayClick', function (overlay) {
       that.setSelectedMarker(overlay);
@@ -1222,7 +1229,7 @@ var MarkerCluster = /*#__PURE__*/function () {
     });
 
     this._map.Event.bind('loadTile', function (s) {
-      if (s === 'start' || !that._ready || !that._iloader.ready) {
+      if (s !== 'finish' || !that._ready || !that._iloader.ready) {
         return;
       }
 
