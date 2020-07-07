@@ -333,7 +333,6 @@ var ClusterIcon = /*#__PURE__*/function () {
       "icon": this._cluster._markerCluster._iloader.getIcon(0),
       "weight": longdo.OverlayWeight.Top
     });
-    console.log(this._cluster._markerCluster._iloader.getIcon(0));
   }
   /**
    * show cluster icons & marker icons if needed
@@ -649,26 +648,20 @@ var IconLoader = /*#__PURE__*/function () {
         // result.size = {"width":44,"height":44};
         // console.log(elm)
         var svg = document.createElement("svg");
-        svg.setAttribute("width", "44");
-        svg.setAttribute("height", "44");
+        svg.setAttribute("xmlns", 'http://www.w3.org/2000/svg');
+        svg.setAttribute("width", '44');
+        svg.setAttribute("height", '44');
         var circle = document.createElement("circle");
-        circle.setAttribute("cx", "20");
-        circle.setAttribute("cy", "20");
-        circle.setAttribute("r", "40");
-        circle.setAttribute("stroke", "black");
-        circle.setAttribute("stroke-width", "3");
+        circle.setAttribute("cx", "22");
+        circle.setAttribute("cy", "22");
+        circle.setAttribute("r", "20");
         circle.setAttribute("fill", "red");
         svg.appendChild(circle);
-        svg.setAttribute("xmlns", 'http://www.w3.org/2000/svg'); // var serializedSVG = new XMLSerializer().serializeToString(svg);
-        // console.log(serializedSVG)
-        // var base64Data = window.btoa(serializedSVG);
-        // result.html = svg.outerHTML
-
         result.url = "data:image/svg+xml,".concat(svg.outerHTML);
         result.size = {
           "width": 44,
           "height": 44
-        }; // console.log(svg)
+        };
       } else {
         var img = _toConsumableArray(this._images.keys())[index];
 
@@ -691,6 +684,14 @@ var IconLoader = /*#__PURE__*/function () {
 
       return result;
     }
+  }, {
+    key: "svgStringToHtmlNode",
+    value: function svgStringToHtmlNode(svgstring) {
+      var template = document.createElement('template');
+      svgstring = svgstring.trim();
+      template.innerHTML = svgstring;
+      return template.content.firstChild;
+    }
     /**
      * change displaying number in cluster
      * @param {HTMLElement} element element of cluster needing to be made changes
@@ -702,14 +703,21 @@ var IconLoader = /*#__PURE__*/function () {
   }, {
     key: "changeNumber",
     value: function changeNumber(element, num) {
-      if (this.useDefault) {// element.children[0].children[0].children[0].innerText = `${num.toLocaleString()}`;
-        // if(num < 10){
-        //     element.children[0].className = 'marker-cluster marker-cluster-small';
-        // }else if(num < 100){
-        //     element.children[0].className = 'marker-cluster marker-cluster-medium';
-        // }else{
-        //     element.children[0].className = 'marker-cluster marker-cluster-large';
-        // }
+      if (this.useDefault) {
+        // element.children[0].children[0].children[0].innerText = `${num.toLocaleString()}`;
+        var svg = this.svgStringToHtmlNode(element.src.substr(element.src.indexOf(',') + 1));
+
+        if (num < 10) {
+          // console.log(svg);
+          svg.children[0].setAttribute('fill', 'green');
+          console.log(svg);
+        } else if (num < 100) {
+          svg.children[0].setAttribute('fill', 'yellow');
+        } else {
+          svg.children[0].setAttribute('fill', 'red');
+        }
+
+        element.url = "data:image/svg+xml,".concat(svg.outerHTML);
       } else {
         element.children[0].innerText = "".concat(num.toLocaleString());
 
@@ -1199,13 +1207,22 @@ var MarkerCluster = /*#__PURE__*/function () {
         return;
       }
 
-      that.resetViewport(); // that._createClusters();
-    }); // this._map.Event.bind('drop',function() {
-    //     if(!that._ready || !that._iloader.ready){return;}
-    //     that.resetViewport();
-    //     that._createClusters();
-    // });
+      setTimeout(function () {
+        that.resetViewport();
 
+        that._createClusters();
+      }, 150);
+    });
+
+    this._map.Event.bind('drop', function () {
+      if (!that._ready || !that._iloader.ready) {
+        return;
+      }
+
+      that.resetViewport();
+
+      that._createClusters();
+    });
 
     this._map.Event.bind('overlayClick', function (overlay) {
       that.setSelectedMarker(overlay);
@@ -1236,17 +1253,12 @@ var MarkerCluster = /*#__PURE__*/function () {
           return;
         }
       }
-    });
+    }); // this._map.Event.bind('loadTile', function(s){
+    //     if(s !== 'finish' || !that._ready || !that._iloader.ready){return;}
+    //     that.resetViewport();
+    //     that._createClusters();
+    // });
 
-    this._map.Event.bind('loadTile', function (s) {
-      if (s !== 'finish' || !that._ready || !that._iloader.ready) {
-        return;
-      }
-
-      that.resetViewport();
-
-      that._createClusters();
-    });
   }
   /**
    * add marker(s) to plugins's management
