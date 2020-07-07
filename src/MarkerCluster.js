@@ -35,18 +35,23 @@ export default class MarkerCluster{
         this._map.Event.bind('ready',function() {
             if(!that._ready || !that._iloader.ready){return;}
             that._prevZoom = that._map.zoom;
-            that.resetViewport();
-            that._createClusters();
+            // that.resetViewport();
+            // that._createClusters();
+            that.reloadCluster();
         });
         this._map.Event.bind('zoom', function (/*pivot*/){
             if(!that._ready || !that._iloader.ready){return;}
-            that.resetViewport();
-            that._createClusters();
+            // that.resetViewport();
+            // that._createClusters();
+            setTimeout(() => {
+                that.reloadCluster();
+            }, 150);
         });
         this._map.Event.bind('drop',function() {
             if(!that._ready || !that._iloader.ready){return;}
-            that.resetViewport();
-            that._createClusters();
+            // that.resetViewport();
+            // that._createClusters();
+            that.reloadCluster();
         });
         this._map.Event.bind('overlayClick', function(overlay){
             that.setSelectedMarker(overlay)
@@ -61,19 +66,21 @@ export default class MarkerCluster{
                         l.push(cl._markers[len2].location());
                     }
                     that._map.bound(longdo.Util.locationBound(l));
-                    // setTimeout(function(){
-                    //     that.resetViewport();
-                    //     that._createClusters();
-                    // },10);
                     return;
                 }
             }
         });
-        this._map.Event.bind('loadTile', function(s){
-            if(s !== 'finish' || !that._ready || !that._iloader.ready){return;}
-            that.resetViewport();
-            that._createClusters();
-        });
+        // this._map.Event.bind('loadTile', function(s){
+        //     if(s !== 'finish' || !that._ready || !that._iloader.ready){return;}
+        //     // that.resetViewport();
+        //     // that._createClusters();
+        //     console.log('loadTile')
+        //     that.reloadCluster();
+        // });
+    }
+    reloadCluster(){
+        const that = this;
+        that.render();
     }
 
     /**

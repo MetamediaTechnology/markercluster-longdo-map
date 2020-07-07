@@ -1169,10 +1169,10 @@ var MarkerCluster = /*#__PURE__*/function () {
         return;
       }
 
-      that._prevZoom = that._map.zoom;
-      that.resetViewport();
+      that._prevZoom = that._map.zoom; // that.resetViewport();
+      // that._createClusters();
 
-      that._createClusters();
+      that.reloadCluster();
     });
 
     this._map.Event.bind('zoom', function ()
@@ -1180,21 +1180,23 @@ var MarkerCluster = /*#__PURE__*/function () {
     {
       if (!that._ready || !that._iloader.ready) {
         return;
-      }
+      } // that.resetViewport();
+      // that._createClusters();
 
-      that.resetViewport();
 
-      that._createClusters();
+      setTimeout(function () {
+        that.reloadCluster();
+      }, 150);
     });
 
     this._map.Event.bind('drop', function () {
       if (!that._ready || !that._iloader.ready) {
         return;
-      }
+      } // that.resetViewport();
+      // that._createClusters();
 
-      that.resetViewport();
 
-      that._createClusters();
+      that.reloadCluster();
     });
 
     this._map.Event.bind('overlayClick', function (overlay) {
@@ -1217,36 +1219,35 @@ var MarkerCluster = /*#__PURE__*/function () {
             l.push(cl._markers[len2].location());
           }
 
-          that._map.bound(longdo.Util.locationBound(l)); // setTimeout(function(){
-          //     that.resetViewport();
-          //     that._createClusters();
-          // },10);
-
+          that._map.bound(longdo.Util.locationBound(l));
 
           return;
         }
       }
-    });
+    }); // this._map.Event.bind('loadTile', function(s){
+    //     if(s !== 'finish' || !that._ready || !that._iloader.ready){return;}
+    //     // that.resetViewport();
+    //     // that._createClusters();
+    //     console.log('loadTile')
+    //     that.reloadCluster();
+    // });
 
-    this._map.Event.bind('loadTile', function (s) {
-      if (s !== 'finish' || !that._ready || !that._iloader.ready) {
-        return;
-      }
-
-      that.resetViewport();
-
-      that._createClusters();
-    });
   }
-  /**
-   * add marker(s) to plugins's management
-   * @param {longdo.Marker| Array<longdo.Marker>} markers marker(s) to add
-   * @memberof MarkerCluster
-   * @returns {undefined}
-   */
-
 
   _createClass(MarkerCluster, [{
+    key: "reloadCluster",
+    value: function reloadCluster() {
+      var that = this;
+      that.render();
+    }
+    /**
+     * add marker(s) to plugins's management
+     * @param {longdo.Marker| Array<longdo.Marker>} markers marker(s) to add
+     * @memberof MarkerCluster
+     * @returns {undefined}
+     */
+
+  }, {
     key: "addMarkers",
     value: function addMarkers(markers) {
       if (markers instanceof longdo.Marker) {
