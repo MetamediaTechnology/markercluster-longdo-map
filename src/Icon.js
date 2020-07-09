@@ -258,7 +258,6 @@ export class IconLoader{
             circle.setAttribute("cx","22");
             circle.setAttribute("cy","22");
             circle.setAttribute("r","22");
-            circle.setAttribute("fill","red");
             svg.appendChild(circle);
             const text = document.createElement("text");
             text.setAttribute("x","50%");
@@ -304,13 +303,13 @@ export class IconLoader{
             // element.children[0].children[0].children[0].innerText = `${num.toLocaleString()}`;
             let svg = this.svgStringToHtmlNode( element.src.substr(element.src.indexOf(',')+1))
             if(num < 10){
-                svg.children[0].setAttribute('fill','green')
+                svg.children[0].setAttribute('fill','%238ED569')
                 svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(num)
             }else if(num < 100){
-                svg.children[0].setAttribute('fill','yellow')
+                svg.children[0].setAttribute('fill','%23ECCC4B')
                 svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(num)
             }else{
-                svg.children[0].setAttribute('fill','red')
+                svg.children[0].setAttribute('fill','%23E4915B')
                 svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(num)
             }
             element.setAttribute('src',`data:image/svg+xml,${svg.outerHTML}`);
