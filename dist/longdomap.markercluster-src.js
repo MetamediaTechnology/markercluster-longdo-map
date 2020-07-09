@@ -654,9 +654,16 @@ var IconLoader = /*#__PURE__*/function () {
         var circle = document.createElement("circle");
         circle.setAttribute("cx", "22");
         circle.setAttribute("cy", "22");
-        circle.setAttribute("r", "20");
+        circle.setAttribute("r", "22");
         circle.setAttribute("fill", "red");
         svg.appendChild(circle);
+        var text = document.createElement("text");
+        text.setAttribute("x", "50%");
+        text.setAttribute("y", "50%");
+        text.setAttribute("dominant-baseline", "middle");
+        text.setAttribute("text-anchor", "middle"); // text.setAttribute("fill","white");
+
+        svg.appendChild(text);
         result.url = "data:image/svg+xml,".concat(svg.outerHTML);
         result.size = {
           "width": 44,
@@ -708,16 +715,23 @@ var IconLoader = /*#__PURE__*/function () {
         var svg = this.svgStringToHtmlNode(element.src.substr(element.src.indexOf(',') + 1));
 
         if (num < 10) {
-          // console.log(svg);
           svg.children[0].setAttribute('fill', 'green');
-          console.log(svg);
+          svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', {
+            maximumSignificantDigits: 3
+          }).format(num);
         } else if (num < 100) {
           svg.children[0].setAttribute('fill', 'yellow');
+          svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', {
+            maximumSignificantDigits: 3
+          }).format(num);
         } else {
           svg.children[0].setAttribute('fill', 'red');
+          svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', {
+            maximumSignificantDigits: 3
+          }).format(num);
         }
 
-        element.url = "data:image/svg+xml,".concat(svg.outerHTML);
+        element.setAttribute('src', "data:image/svg+xml,".concat(svg.outerHTML));
       } else {
         element.children[0].innerText = "".concat(num.toLocaleString());
 
