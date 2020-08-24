@@ -259,11 +259,17 @@ export class IconLoader{
             circle.setAttribute("cy","22");
             circle.setAttribute("r","22");
             svg.appendChild(circle);
+            const innercircle = document.createElement("circle");
+            innercircle.setAttribute("cx","22");
+            innercircle.setAttribute("cy","22");
+            innercircle.setAttribute("r","16");
+            svg.appendChild(innercircle);
             const text = document.createElement("text");
             text.setAttribute("x","50%");
             text.setAttribute("y","50%");
             text.setAttribute("dominant-baseline" ,"middle")
             text.setAttribute("text-anchor","middle")
+            text.setAttribute("font-size","12")
             // text.setAttribute("fill","white");
             svg.appendChild(text);
             result.url = `data:image/svg+xml,${svg.outerHTML}`;
@@ -303,14 +309,17 @@ export class IconLoader{
             // element.children[0].children[0].children[0].innerText = `${num.toLocaleString()}`;
             let svg = this.svgStringToHtmlNode( element.src.substr(element.src.indexOf(',')+1))
             if(num < 10){
-                svg.children[0].setAttribute('fill','%238ED569')
-                svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(num)
+                svg.children[0].setAttribute('fill','%23D3ECBB');
+                svg.children[1].setAttribute('fill','%2394D66C') 
+                svg.children[2].innerHTML = num.toLocaleString();
             }else if(num < 100){
-                svg.children[0].setAttribute('fill','%23ECCC4B')
-                svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(num)
+                svg.children[0].setAttribute('fill','%23F6E49D')
+                svg.children[1].setAttribute('fill','%23EFCB52') 
+                svg.children[2].innerHTML = num.toLocaleString();
             }else{
-                svg.children[0].setAttribute('fill','%23E4915B')
-                svg.children[1].innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(num)
+                svg.children[0].setAttribute('fill','%23FBB39A')
+                svg.children[1].setAttribute('fill','%23F39357') 
+                svg.children[2].innerHTML = num.toLocaleString();
             }
             element.setAttribute('src',`data:image/svg+xml,${svg.outerHTML}`);
         }else{
