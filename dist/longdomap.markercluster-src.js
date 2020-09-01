@@ -365,7 +365,7 @@ var ClusterIcon = /*#__PURE__*/function () {
 
         if (mz && zoom > mz || zoom === 20) {
           while (len--) {
-            var _marker = this._markers[len];
+            var _marker = this._cluster._markers[len];
 
             if (!_marker.active()) {
               this._cluster._map.Overlays.add(_marker);
@@ -722,17 +722,15 @@ var IconLoader = /*#__PURE__*/function () {
         if (num < 10) {
           svg.children[0].setAttribute('fill', '%23D3ECBB');
           svg.children[1].setAttribute('fill', '%2394D66C');
-          svg.children[2].innerHTML = num.toLocaleString();
         } else if (num < 100) {
           svg.children[0].setAttribute('fill', '%23F6E49D');
           svg.children[1].setAttribute('fill', '%23EFCB52');
-          svg.children[2].innerHTML = num.toLocaleString();
         } else {
           svg.children[0].setAttribute('fill', '%23FBB39A');
           svg.children[1].setAttribute('fill', '%23F39357');
-          svg.children[2].innerHTML = num.toLocaleString();
         }
 
+        svg.children[2].innerHTML = num.toLocaleString();
         element.setAttribute('src', "data:image/svg+xml,".concat(svg.outerHTML));
       } else {
         element.children[0].innerText = "".concat(num.toLocaleString());
