@@ -46,7 +46,7 @@ export class ClusterIcon{
             const mz = this._config.maxZoom;
             if(mz && zoom > mz || zoom === 20){
                 while(len--){
-                    const marker = this._markers[len];
+                    const marker = this._cluster._markers[len];
                     if(!marker.active()){
                         this._cluster._map.Overlays.add(marker);
                     }
