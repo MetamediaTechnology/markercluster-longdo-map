@@ -254,6 +254,7 @@ var _default = function _default(options) {
 
   this.maxZoom = options.maxZoom || null;
   this.minClusterSize = options.minClusterSize || 2;
+  this.textColor = options.textColor || 'black';
   this.gridSize = options.gridSize || 120;
   this.clusterRadius = options.clusterRadius || this.gridSize;
   this.averageCenter = options.averageCenter;
@@ -365,7 +366,7 @@ var ClusterIcon = /*#__PURE__*/function () {
 
         if (mz && zoom > mz || zoom === 20) {
           while (len--) {
-            var _marker = this._markers[len];
+            var _marker = this._cluster._markers[len];
 
             if (!_marker.active()) {
               this._cluster._map.Overlays.add(_marker);
@@ -643,6 +644,7 @@ var IconLoader = /*#__PURE__*/function () {
         elm.style.marginLeft = '-22px';
         elm.style.marginTop = '-22px';
         elm.style.overflow = 'hidden';
+        elm.style.color = "".concat(this._config.textColor);
         elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
         result.html = elm.outerHTML;
         result.size = {
@@ -660,7 +662,7 @@ var IconLoader = /*#__PURE__*/function () {
         _elm.style.marginTop = "-".concat(img.height / 2, "px");
         _elm.style.background = "url('".concat(encodeURI(img.src), "') no-repeat center top");
         _elm.style.lineHeight = _elm.style.height;
-        _elm.style.color = 'black';
+        _elm.style.color = "".concat(this._config.textColor);
         _elm.style.fontWeight = 'bold';
         _elm.style.textAlign = 'center';
         result.html = _elm.outerHTML;

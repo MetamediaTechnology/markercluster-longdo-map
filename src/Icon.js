@@ -245,6 +245,7 @@ export class IconLoader{
             elm.style.marginLeft = '-22px';
             elm.style.marginTop = '-22px';
             elm.style.overflow = 'hidden';
+            elm.style.color = `${this._config.textColor}`
             elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
             result.html = elm.outerHTML;
             result.size = {"width":44,"height":44};
@@ -257,7 +258,7 @@ export class IconLoader{
             elm.style.marginTop = `-${img.height/2}px`;
             elm.style.background = `url('${encodeURI(img.src)}') no-repeat center top`;
             elm.style.lineHeight = elm.style.height;
-            elm.style.color = 'black';
+            elm.style.color = `${this._config.textColor}`;
             elm.style.fontWeight = 'bold';
             elm.style.textAlign = 'center';
             result.html = elm.outerHTML;
