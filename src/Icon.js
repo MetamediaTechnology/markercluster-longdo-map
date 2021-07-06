@@ -247,6 +247,30 @@ export class IconLoader{
             elm.style.overflow = 'hidden';
             elm.style.color = `${this._config.textColor}`
             elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
+            if (this._config.customOuterClusterCSS) {
+                for (const key in this._config.customOuterClusterCSS) {
+                    if (Object.hasOwnProperty.call(this._config.customOuterClusterCSS, key)) {
+                        const styleOuterClusterObj = this._config.customOuterClusterCSS[key];
+                        elm.style[key] = styleOuterClusterObj
+                    }
+                }
+            }
+            if (this._config.customInnerClusterCSS) {
+                for (const key in this._config.customInnerClusterCSS) {
+                    if (Object.hasOwnProperty.call(this._config.customInnerClusterCSS, key)) {
+                        const styleInnerClusterObj = this._config.customInnerClusterCSS[key];
+                        elm2.style[key] = styleInnerClusterObj
+                    }
+                }
+            }
+            if (this._config.customTextClusterCSS) {
+                for (const key in this._config.customTextClusterCSS) {
+                    if (Object.hasOwnProperty.call(this._config.customTextClusterCSS, key)) {
+                        const styleTextObj = this._config.customTextClusterCSS[key];
+                        elm3.style[key] = styleTextObj
+                    }
+                }
+            }
             result.html = elm.outerHTML;
             result.size = {"width":44,"height":44};
         }else{
@@ -261,6 +285,14 @@ export class IconLoader{
             elm.style.color = `${this._config.textColor}`;
             elm.style.fontWeight = 'bold';
             elm.style.textAlign = 'center';
+            if (this._config.customTextClusterCSS) {
+                for (const key in this._config.customTextClusterCSS) {
+                    if (Object.hasOwnProperty.call(this._config.customTextClusterCSS, key)) {
+                        const styleTextObj = this._config.customTextClusterCSS[key];
+                        elm.style[key] = styleTextObj
+                    }
+                }
+            }
             result.html = elm.outerHTML;
             result.size = {"width":img.width,"height":img.height};
         }
