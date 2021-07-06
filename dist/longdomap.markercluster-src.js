@@ -255,6 +255,9 @@ var _default = function _default(options) {
   this.maxZoom = options.maxZoom || null;
   this.minClusterSize = options.minClusterSize || 2;
   this.textColor = options.textColor || 'black';
+  this.customOuterClusterCSS = options.customOuterClusterCSS || {};
+  this.customInnerClusterCSS = options.customInnerClusterCSS || {};
+  this.customTextClusterCSS = options.customTextClusterCSS || {};
   this.gridSize = options.gridSize || 120;
   this.clusterRadius = options.clusterRadius || this.gridSize;
   this.averageCenter = options.averageCenter;
@@ -646,6 +649,34 @@ var IconLoader = /*#__PURE__*/function () {
         elm.style.overflow = 'hidden';
         elm.style.color = "".concat(this._config.textColor);
         elm.className = 'marker-cluster marker-cluster-small leaflet-marker-icon';
+
+        if (this._config.customOuterClusterCSS) {
+          for (var key in this._config.customOuterClusterCSS) {
+            if (Object.hasOwnProperty.call(this._config.customOuterClusterCSS, key)) {
+              var styleOuterClusterObj = this._config.customOuterClusterCSS[key];
+              elm.style[key] = styleOuterClusterObj;
+            }
+          }
+        }
+
+        if (this._config.customInnerClusterCSS) {
+          for (var _key in this._config.customInnerClusterCSS) {
+            if (Object.hasOwnProperty.call(this._config.customInnerClusterCSS, _key)) {
+              var styleInnerClusterObj = this._config.customInnerClusterCSS[_key];
+              elm2.style[_key] = styleInnerClusterObj;
+            }
+          }
+        }
+
+        if (this._config.customTextClusterCSS) {
+          for (var _key2 in this._config.customTextClusterCSS) {
+            if (Object.hasOwnProperty.call(this._config.customTextClusterCSS, _key2)) {
+              var styleTextObj = this._config.customTextClusterCSS[_key2];
+              elm3.style[_key2] = styleTextObj;
+            }
+          }
+        }
+
         result.html = elm.outerHTML;
         result.size = {
           "width": 44,
@@ -665,6 +696,16 @@ var IconLoader = /*#__PURE__*/function () {
         _elm.style.color = "".concat(this._config.textColor);
         _elm.style.fontWeight = 'bold';
         _elm.style.textAlign = 'center';
+
+        if (this._config.customTextClusterCSS) {
+          for (var _key3 in this._config.customTextClusterCSS) {
+            if (Object.hasOwnProperty.call(this._config.customTextClusterCSS, _key3)) {
+              var _styleTextObj = this._config.customTextClusterCSS[_key3];
+              _elm.style[_key3] = _styleTextObj;
+            }
+          }
+        }
+
         result.html = _elm.outerHTML;
         result.size = {
           "width": img.width,
