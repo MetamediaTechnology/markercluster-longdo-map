@@ -84,6 +84,10 @@ export default class{
     isMarkerInClusterBounds(marker){
         return this._bounds.isLocInBounds(marker.location());
     }
+    isMarkerInClusterBoundsAtZoom(marker, zoom){
+        this._bounds = LLBBox.generateRect(this._center).extendSize(this._config.gridSize*Math.pow(2,-zoom));
+        return this._bounds.isLocInBounds(marker.location());
+    }
     /**
      * update icon's style and position and then show on map
      * @returns {undefined}

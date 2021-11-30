@@ -52,15 +52,33 @@ export default class MarkerCluster{
             that.setSelectedMarker(overlay)
             if(!that._ready || !that._iloader.ready){return;}
             let len = that._clusters.length;
+            let distance = Number.POSITIVE_INFINITY;
             while(len--){
                 const cl = that._clusters[len];
-                if(overlay === cl._clusterIcon._clusterMarker){
+                const cen = cl._center;
+                if(overlay === cl._clusterIcon._clusterMarker && cen){
                     const l = [];
                     let len2 = cl._markers.length;
                     while(len2--){
-                        l.push(cl._markers[len2].location());
+                        const marker = cl._markers[len2]
+                        l.push(marker.location());
+                        const d = longdo.Util.distance([cen,marker.location()]);
+                        if(d < distance){
+                            distance = d;
+                            // clusterToAddTo = cluster;
+                            // console.log(cl.isMarkerInClusterBoundsAtZoom(marker, that._map.zoom()))
+                            for (let index = that._map.zoom(); index <= 20; index++) {
+                                // const element = array[index];
+                                const isinCluster = (index ,cl.isMarkerInClusterBoundsAtZoom(marker, index));
+                                if (!isinCluster) {
+                                    that._map.location(overlay.location(), false);
+                                    that._map.zoom(index);
+                                    return;
+                                }
+                            }
+                        }
                     }
-                    that._map.bound(longdo.Util.locationBound(l));
+                    // that._map.bound(longdo.Util.locationBound(l));
                     // setTimeout(function(){
                     //     that.resetViewport();
                     //     that._createClusters();
