@@ -69,7 +69,7 @@ export default class MarkerCluster{
                             // console.log(cl.isMarkerInClusterBoundsAtZoom(marker, that._map.zoom()))
                             for (let index = that._map.zoom(); index <= 20; index++) {
                                 // const element = array[index];
-                                const isinCluster = (index ,cl.isMarkerInClusterBoundsAtZoom(marker, index));
+                                const isinCluster = cl.isMarkerInClusterBoundsAtZoom(marker, index);
                                 if (!isinCluster) {
                                     that._map.location(overlay.location(), false);
                                     that._map.zoom(index);
