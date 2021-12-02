@@ -58,6 +58,11 @@ export class ClusterIcon{
             }else{
                 this._clusterMarker.setLocation(pos);
                 this._map.Overlays.add(this._clusterMarker);
+                const targetmarker = this._cluster._markers;
+                for (let index = 0; index < targetmarker.length; index++) {
+                    const element = targetmarker[index];
+                    this._map.Overlays.remove(element)
+                }
                 if(this._poly){
                     this._map.Overlays.remove(this._poly);
                 }

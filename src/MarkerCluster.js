@@ -30,24 +30,19 @@ export default class MarkerCluster{
         this.overlay = [];
         this.config = new Config(options);
         this._iloader = new IconLoader(this,this.config);
+        this._projection = longdo.Projections.EPSG3857;
         
         const that = this;
-        this._map.Event.bind('ready',function() {
-            if(!that._ready || !that._iloader.ready){return;}
-            that._prevZoom = that._map.zoom;
-            that.resetViewport();
-            that._createClusters();
-        });
         this._map.Event.bind('zoom', function (/*pivot*/){
             if(!that._ready || !that._iloader.ready){return;}
             that.resetViewport();
-            // that._createClusters();
+            that._createClusters();
         });
-        // this._map.Event.bind('drop',function() {
-        //     if(!that._ready || !that._iloader.ready){return;}
-        //     that.resetViewport();
-        //     that._createClusters();
-        // });
+        this._map.Event.bind('drop',function() {
+            if(!that._ready || !that._iloader.ready){return;}
+            that.resetViewport();
+            that._createClusters();
+        });
         this._map.Event.bind('overlayClick', function(overlay){
             that.setSelectedMarker(overlay)
             if(!that._ready || !that._iloader.ready){return;}
@@ -87,11 +82,12 @@ export default class MarkerCluster{
                 }
             }
         });
-        this._map.Event.bind('loadTile', function(s){
-            if(s === 'start' || !that._ready || !that._iloader.ready){return;}
-            that.resetViewport();
-            that._createClusters();
-        });
+        // this._map.Event.bind('loadTile', function(s){
+        //     if(s === 'start' || !that._ready || !that._iloader.ready){return;}
+        //     console.log('load tile')
+        //     that.resetViewport();
+        //     that._createClusters();
+        // });
     }
 
     /**
@@ -147,8 +143,17 @@ export default class MarkerCluster{
     render(){
         this._ready = true;
         if(this._iloader.ready){
+
+            // this._map.Event.bind('ready',() => {
+            //     if(!this._ready || !this._iloader.ready){return;}
+            //     this._prevZoom = this._map.zoom;
+            //     console.log('map ready')
+            //     this.resetViewport();
+            //     this._createClusters();
+            // });
             this.resetViewport();
             this._createClusters();
+
         }
     }
     /**
@@ -173,9 +178,9 @@ export default class MarkerCluster{
                         this._addToTiledCluster(m);
                     }
                 }
-                
             }
         }
+                
         len = this._clusters.length;
         while(len--){
             const cl = this._clusters[len];
@@ -311,7 +316,7 @@ export default class MarkerCluster{
         while(len--){
             const marker = this._markers[len];
             marker.isAdded = false;
-            this._map.Overlays.remove(marker);
+            //this._map.Overlays.remove(marker);
         }
         this._clusters = [];
     }
