@@ -143,12 +143,12 @@ export class LLBBox{
         const result = longdo.Util.contains(loc,this.getRectVertex());
         return result === null ? true : result;
     }
-    isLocInBoundsInZoom(loc, zoom){
-        console.log(zoom);
-        console.log(this.getRectVertex());
-        const result = longdo.Util.contains(loc, this.getRectVertex());
-        return result === null ? true : result;
-    }
+    // isLocInBoundsInZoom(loc, zoom){
+    //     console.log(zoom);
+    //     console.log(this.getRectVertex());
+    //     const result = longdo.Util.contains(loc, this.getRectVertex());
+    //     return result === null ? true : result;
+    // }
     /**
      * extend bound size
      * @param {number} diff size to extends

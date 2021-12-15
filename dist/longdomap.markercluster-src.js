@@ -271,6 +271,7 @@ var _default = function _default(options) {
   this.swarmModeEnabled = options.swarmModeEnabled;
   this.swarmAlg = options.swarmAlg ? parseInt(options.swarmAlg, 10) : null;
   this.styles = options.styles || null;
+  this.onClickCenter = options.onClickCenter || false;
   this.swarmGridLength = options.swarmGridLength ? parseInt(options.swarmGridLength, 10) : null;
   this.swarmMarkersMaxLimit = options.swarmMarkersMaxLimit ? parseInt(options.swarmMarkersMaxLimit, 10) : null;
   this.swarmMarkersAmountAdjust = options.swarmMarkersAmountAdjust;
@@ -977,15 +978,13 @@ var LLBBox = /*#__PURE__*/function () {
     value: function isLocInBounds(loc) {
       var result = longdo.Util.contains(loc, this.getRectVertex());
       return result === null ? true : result;
-    }
-  }, {
-    key: "isLocInBoundsInZoom",
-    value: function isLocInBoundsInZoom(loc, zoom) {
-      console.log(zoom);
-      console.log(this.getRectVertex());
-      var result = longdo.Util.contains(loc, this.getRectVertex());
-      return result === null ? true : result;
-    }
+    } // isLocInBoundsInZoom(loc, zoom){
+    //     console.log(zoom);
+    //     console.log(this.getRectVertex());
+    //     const result = longdo.Util.contains(loc, this.getRectVertex());
+    //     return result === null ? true : result;
+    // }
+
     /**
      * extend bound size
      * @param {number} diff size to extends
@@ -1237,9 +1236,11 @@ var MarkerCluster = /*#__PURE__*/function () {
         return;
       }
 
-      that.resetViewport();
+      setTimeout(function () {
+        that.resetViewport();
 
-      that._createClusters();
+        that._createClusters();
+      }, 100);
     });
 
     this._map.Event.bind('drop', function () {
@@ -1276,17 +1277,28 @@ var MarkerCluster = /*#__PURE__*/function () {
             var d = longdo.Util.distance([cen, marker.location()]);
 
             if (d < distance) {
-              distance = d; // clusterToAddTo = cluster;
-              // console.log(cl.isMarkerInClusterBoundsAtZoom(marker, that._map.zoom()))
+              distance = d;
 
-              for (var index = that._map.zoom(); index <= 20; index++) {
-                // const element = array[index];
+              var zoom = that._map.zoom();
+
+              for (var index = zoom; index <= 20; index++) {
                 var isinCluster = cl.isMarkerInClusterBoundsAtZoom(marker, index);
 
                 if (!isinCluster) {
-                  that._map.location(overlay.location(), false);
-
                   that._map.zoom(index);
+
+                  if (that.config.onClickCenter) {
+                    that._map.location(overlay.location(), false);
+                  } else {
+                    var zoomTime = index - zoom - 1;
+                    var avgLoc = longdo.Util.averageLocation(that._projection, that._map.location(), overlay.location());
+
+                    while (zoomTime--) {
+                      avgLoc = longdo.Util.averageLocation(that._projection, avgLoc, overlay.location());
+                    }
+
+                    that._map.location(avgLoc, false);
+                  }
 
                   return;
                 }

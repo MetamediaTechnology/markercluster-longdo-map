@@ -35,8 +35,10 @@ export default class MarkerCluster{
         const that = this;
         this._map.Event.bind('zoom', function (/*pivot*/){
             if(!that._ready || !that._iloader.ready){return;}
-            that.resetViewport();
-            that._createClusters();
+            setTimeout(() => {
+                that.resetViewport();
+                that._createClusters();
+            }, 100);
         });
         this._map.Event.bind('drop',function() {
             if(!that._ready || !that._iloader.ready){return;}
@@ -60,14 +62,21 @@ export default class MarkerCluster{
                         const d = longdo.Util.distance([cen,marker.location()]);
                         if(d < distance){
                             distance = d;
-                            // clusterToAddTo = cluster;
-                            // console.log(cl.isMarkerInClusterBoundsAtZoom(marker, that._map.zoom()))
-                            for (let index = that._map.zoom(); index <= 20; index++) {
-                                // const element = array[index];
+                            const zoom = that._map.zoom()
+                            for (let index = zoom; index <= 20; index++) {
                                 const isinCluster = cl.isMarkerInClusterBoundsAtZoom(marker, index);
                                 if (!isinCluster) {
-                                    that._map.location(overlay.location(), false);
                                     that._map.zoom(index);
+                                    if(that.config.onClickCenter) {
+                                        that._map.location(overlay.location(), false)
+                                    } else {
+                                        let zoomTime = index - zoom - 1
+                                        let avgLoc = longdo.Util.averageLocation(that._projection ,that._map.location(), overlay.location())
+                                        while (zoomTime--) {
+                                            avgLoc = longdo.Util.averageLocation(that._projection ,avgLoc, overlay.location())
+                                        }
+                                        that._map.location(avgLoc, false)
+                                    }
                                     return;
                                 }
                             }
