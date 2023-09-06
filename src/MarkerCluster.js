@@ -153,15 +153,14 @@ export default class MarkerCluster{
         this._ready = true;
         if(this._iloader.ready){
 
-            // this._map.Event.bind('ready',() => {
-            //     if(!this._ready || !this._iloader.ready){return;}
-            //     this._prevZoom = this._map.zoom;
-            //     console.log('map ready')
-            //     this.resetViewport();
-            //     this._createClusters();
-            // });
-            this.resetViewport();
-            this._createClusters();
+            this._map.Event.bind('ready',() => {
+                if(!this._ready || !this._iloader.ready){return;}
+                this._prevZoom = this._map.zoom;
+                this.resetViewport();
+                this._createClusters();
+            });
+            // this.resetViewport();
+            // this._createClusters();
 
         }
     }

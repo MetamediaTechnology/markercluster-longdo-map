@@ -357,6 +357,8 @@ var ClusterIcon = /*#__PURE__*/function () {
     value: function show() {
       var len = this._cluster._markers.length;
 
+      var zoom = this._map.zoom();
+
       if (!this._config.swarmModeEnabled) {
         var pos = this._center;
 
@@ -369,8 +371,6 @@ var ClusterIcon = /*#__PURE__*/function () {
 
           return;
         }
-
-        var zoom = this._map.zoom();
 
         var mz = this._config.maxZoom;
 
@@ -637,7 +637,7 @@ var IconLoader = /*#__PURE__*/function () {
     /**
      * returns icon config object according to longdo Marker icon syntax
      * @param {number} index index number to get icon style
-     * @returns {Object} icon config values object 
+     * @returns {Object} icon config values object
      * @memberof IconLoader
      */
 
@@ -733,7 +733,7 @@ var IconLoader = /*#__PURE__*/function () {
     /**
      * change displaying number in cluster
      * @param {HTMLElement} element element of cluster needing to be made changes
-     * @param {number} num number to change to 
+     * @param {number} num number to change to
      * @memberof IconLoader
      * @returns {undefined}
      */
@@ -1391,19 +1391,24 @@ var MarkerCluster = /*#__PURE__*/function () {
   }, {
     key: "render",
     value: function render() {
+      var _this = this;
+
       this._ready = true;
 
       if (this._iloader.ready) {
-        // this._map.Event.bind('ready',() => {
-        //     if(!this._ready || !this._iloader.ready){return;}
-        //     this._prevZoom = this._map.zoom;
-        //     console.log('map ready')
-        //     this.resetViewport();
-        //     this._createClusters();
-        // });
-        this.resetViewport();
+        this._map.Event.bind('ready', function () {
+          if (!_this._ready || !_this._iloader.ready) {
+            return;
+          }
 
-        this._createClusters();
+          _this._prevZoom = _this._map.zoom;
+
+          _this.resetViewport();
+
+          _this._createClusters();
+        }); // this.resetViewport();
+        // this._createClusters();
+
       }
     }
     /**

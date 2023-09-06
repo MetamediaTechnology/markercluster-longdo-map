@@ -33,6 +33,7 @@ export class ClusterIcon{
      */
     show(){
         let len = this._cluster._markers.length;
+        const zoom = this._map.zoom();
         if(!this._config.swarmModeEnabled){
             const pos = this._center;
             if (this._cluster._markers.length < this._config.minClusterSize){
@@ -42,7 +43,6 @@ export class ClusterIcon{
                 }
                 return;
             }
-            const zoom = this._map.zoom();
             const mz = this._config.maxZoom;
             if(mz && zoom > mz || zoom === 20){
                 while(len--){
@@ -221,9 +221,9 @@ export class IconLoader{
      * @returns {undefined}
      */
     loadStyles(styles){
-        styles.sort((elm1,elm2) => 
+        styles.sort((elm1,elm2) =>
         elm1.minThreshold < elm2.minThreshold ? 1 : elm1.minThreshold === elm2.minThreshold ?
-         0 : -1); 
+         0 : -1);
          let len = styles.length;
          const that = this;
          while(len--){
@@ -234,7 +234,7 @@ export class IconLoader{
     /**
      * returns icon config object according to longdo Marker icon syntax
      * @param {number} index index number to get icon style
-     * @returns {Object} icon config values object 
+     * @returns {Object} icon config values object
      * @memberof IconLoader
      */
     getIcon(index){
@@ -306,7 +306,7 @@ export class IconLoader{
     /**
      * change displaying number in cluster
      * @param {HTMLElement} element element of cluster needing to be made changes
-     * @param {number} num number to change to 
+     * @param {number} num number to change to
      * @memberof IconLoader
      * @returns {undefined}
      */
